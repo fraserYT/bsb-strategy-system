@@ -1,6 +1,12 @@
 -- BsB Strategy Planning System
 -- Database Functions
--- Last updated: 2026-02-02
+-- Last updated: 2026-02-13
+
+-- ============================================
+-- upsert_project
+-- Called by Make.com via PostgreSQL Execute Function module
+-- Maps Asana project data into the projects table
+-- ============================================
 
 CREATE OR REPLACE FUNCTION upsert_project(
     p_asana_id TEXT,
@@ -15,55 +21,115 @@ CREATE OR REPLACE FUNCTION upsert_project(
     p_project_type TEXT
 ) RETURNS VOID AS $$
 DECLARE
-v_user_id INTEGER;
+    v_user_id INTEGER;
+    v_mapped_status TEXT;
+    v_start_cycle TEXT;
+    v_end_cycle TEXT;
 BEGIN
-    -- Upsert user first
-INSERT INTO users (asana_user_id, first_name, last_name)
-VALUES (
-           p_owner_asana_id,
-           split_part(p_owner_name, ' ', 1),
-           split_part(p_owner_name, ' ', 2)
-       )
-    ON CONFLICT (asana_user_id) DO UPDATE SET
-    first_name = EXCLUDED.first_name,
-                                       last_name = EXCLUDED.last_name,
-                                       updated_at = NOW()
-                                       RETURNING id INTO v_user_id;
+    -- Map Asana status values to database constraint values
+    v_mapped_status := CASE p_status
+        WHEN 'on_track' THEN 'on_track'
+        WHEN 'at_risk' THEN 'at_risk'
+        WHEN 'off_track' THEN 'blocked'
+        WHEN 'on_hold' THEN 'on_hold'
+        WHEN 'complete' THEN 'complete'
+        ELSE 'not_started'
+    END;
 
--- Upsert project
-INSERT INTO projects (
-    asana_project_id,
-    code,
-    name,
-    strategic_bet_id,
-    owning_department_id,
-    project_lead,
-    project_lead_id,
-    status,
-    start_cycle_id,
-    end_cycle_id
-)
-VALUES (
-           p_asana_id,
-           'P-' || p_asana_id,
-           p_name,
-           (SELECT id FROM strategic_bets WHERE code = p_bet_code),
-           (SELECT id FROM departments WHERE name = p_team_name),
-           p_owner_name,
-           v_user_id,
-           p_status,
-           (SELECT id FROM focus_cycles WHERE code = p_start_cycle),
-           (SELECT id FROM focus_cycles WHERE code = p_end_cycle)
-       )
-    ON CONFLICT (asana_project_id)
-    DO UPDATE SET
-    name = EXCLUDED.name,
-               owning_department_id = EXCLUDED.owning_department_id,
-               project_lead = EXCLUDED.project_lead,
-               project_lead_id = EXCLUDED.project_lead_id,
-               status = EXCLUDED.status,
-               start_cycle_id = EXCLUDED.start_cycle_id,
-               end_cycle_id = EXCLUDED.end_cycle_id,
-               updated_at = NOW();
+    -- Strip "2026 " prefix from focus cycle values (Asana stores "2026 FC1", DB stores "FC1")
+    v_start_cycle := REPLACE(p_start_cycle, '2026 ', '');
+    v_end_cycle := REPLACE(p_end_cycle, '2026 ', '');
+
+    -- Upsert user first (only if owner exists)
+    IF p_owner_asana_id IS NOT NULL AND p_owner_asana_id != '' THEN
+        INSERT INTO users (asana_user_id, first_name, last_name)
+        VALUES (
+            p_owner_asana_id,
+            split_part(p_owner_name, ' ', 1),
+            split_part(p_owner_name, ' ', 2)
+        )
+        ON CONFLICT (asana_user_id) DO UPDATE SET
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name,
+            updated_at = NOW()
+        RETURNING id INTO v_user_id;
+    END IF;
+
+    -- Upsert project
+    INSERT INTO projects (
+        asana_project_id, code, name, strategic_bet_id, owning_department_id,
+        project_lead, project_lead_id, status, start_cycle_id, end_cycle_id, project_type
+    )
+    VALUES (
+        p_asana_id,
+        'P-' || p_asana_id,
+        p_name,
+        (SELECT id FROM strategic_bets WHERE code = p_bet_code),
+        (SELECT id FROM departments WHERE name = p_team_name),
+        p_owner_name,
+        v_user_id,
+        v_mapped_status,
+        (SELECT id FROM focus_cycles WHERE code = v_start_cycle),
+        (SELECT id FROM focus_cycles WHERE code = v_end_cycle),
+        p_project_type
+    )
+    ON CONFLICT (asana_project_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        strategic_bet_id = EXCLUDED.strategic_bet_id,
+        owning_department_id = EXCLUDED.owning_department_id,
+        project_lead = EXCLUDED.project_lead,
+        project_lead_id = EXCLUDED.project_lead_id,
+        status = v_mapped_status,
+        start_cycle_id = (SELECT id FROM focus_cycles WHERE code = v_start_cycle),
+        end_cycle_id = (SELECT id FROM focus_cycles WHERE code = v_end_cycle),
+        project_type = EXCLUDED.project_type,
+        updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ============================================
+-- upsert_milestone
+-- Called by Make.com via PostgreSQL Execute Function module
+-- Maps Asana milestone data into the milestones table
+-- ============================================
+
+CREATE OR REPLACE FUNCTION upsert_milestone(
+    p_asana_id TEXT,
+    p_project_asana_id TEXT,
+    p_name TEXT,
+    p_target_date DATE,
+    p_completed BOOLEAN,
+    p_focus_cycle TEXT
+) RETURNS VOID AS $$
+DECLARE
+    v_project_id INTEGER;
+    v_status TEXT;
+BEGIN
+    -- Look up the parent project by its Asana ID
+    SELECT id INTO v_project_id FROM projects WHERE asana_project_id = p_project_asana_id;
+
+    -- Map completed boolean to status
+    v_status := CASE WHEN p_completed THEN 'complete' ELSE 'upcoming' END;
+
+    -- Upsert milestone
+    INSERT INTO milestones (
+        asana_milestone_id, code, project_id, name, target_date, status, focus_cycle_id
+    )
+    VALUES (
+        p_asana_id,
+        'M-' || p_asana_id,
+        v_project_id,
+        p_name,
+        p_target_date,
+        v_status,
+        (SELECT id FROM focus_cycles WHERE code = REPLACE(p_focus_cycle, '2026 ', ''))
+    )
+    ON CONFLICT (asana_milestone_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        target_date = EXCLUDED.target_date,
+        status = v_status,
+        focus_cycle_id = (SELECT id FROM focus_cycles WHERE code = REPLACE(p_focus_cycle, '2026 ', '')),
+        updated_at = NOW();
 END;
 $$ LANGUAGE plpgsql;

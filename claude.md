@@ -152,10 +152,13 @@ Building an automated planning and execution system for annual strategy delivery
 
 ### Portfolio IDs
 
-| Portfolio | Asana ID |
-|-----------|----------|
+| Portfolio | Asana GID |
+|-----------|-----------|
+| 🧩 Video-Led Mentor Content (B1) | 1213026203855296 |
+| 🧩 Informed Standardisation (B2) | 1213026203855292 |
 | 🧩 Capacity through Automation (B3) | 1213026203855288 |
-| *(add others as discovered)* | |
+| 🧩 Owned Audience over SEO (B4) | 1213026203855284 |
+| 📥 Upcoming Projects | 1213046199918957 |
 
 ---
 
@@ -209,23 +212,40 @@ Full query templates: [`docs/metabase-queries.md`](docs/metabase-queries.md)
 **Key mappings:**
 - `strategic_bet_id = NULL` for Upcoming Projects branch
 - `strategic_bet_id = corresponding bet ID` for B1-B4 branches
+- Custom fields extracted via index-based access: `{{5.custom_fields[2].display_value}}`
 
-**Function: upsert_project**
+**Function: upsert_project** (10 parameters)
 
-Parameters (10):
-- p_asana_id
-- p_name
-- p_bet_code
-- p_team_name
-- p_owner_asana_id
-- p_owner_name
-- p_status
-- p_start_cycle
-- p_end_cycle
-- p_project_type
+| Parameter | Source |
+|-----------|--------|
+| p_asana_id | `{{5.gid}}` |
+| p_name | `{{5.name}}` |
+| p_bet_code | Hard-coded per branch (B1/B2/B3/B4/NULL) |
+| p_team_name | `{{5.custom_fields[N].display_value}}` (Teams field) |
+| p_owner_asana_id | `{{5.owner.gid}}` |
+| p_owner_name | `{{5.owner.name}}` |
+| p_status | `{{5.current_status_update.status_type}}` |
+| p_start_cycle | `{{5.custom_fields[N].display_value}}` (Start Cycle field) |
+| p_end_cycle | `{{5.custom_fields[N].display_value}}` (End Cycle field) |
+| p_project_type | `{{5.custom_fields[N].display_value}}` (Project Type field) |
 
-**Query string for Asana API:**
-- opt_fields: `name,owner.name,owner.gid,current_status_update.status_type,custom_fields.name,custom_fields.display_value`
+**Function: upsert_milestone** (6 parameters)
+
+| Parameter | Source |
+|-----------|--------|
+| p_asana_id | milestone task gid |
+| p_project_asana_id | parent project gid |
+| p_name | milestone task name |
+| p_target_date | milestone due_on |
+| p_completed | milestone completed boolean |
+| p_focus_cycle | Focus Cycle custom field display_value |
+
+**Asana API query strings:**
+- Projects: `opt_fields: name,owner.name,owner.gid,current_status_update.status_type,custom_fields.name,custom_fields.display_value`
+- Milestones: `opt_fields: name,due_on,completed,resource_subtype,custom_fields.name,custom_fields.display_value`
+
+**Milestone sync flow** (per bet branch):
+Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = milestone`) → PostgreSQL Execute Function (upsert_milestone)
 
 ---
 
@@ -288,38 +308,45 @@ Parameters (10):
 - Created local project folder with CLAUDE.md, sql/schema.sql, sql/functions.sql
 - Claude Code reviewed project and raised 5 clarifying questions
 
-**Decisions pending (from Claude Code review):**
-1. Session log duplication — make docs/ canonical
-2. Missing portfolio IDs for B1, B2, B4 — to be discovered
-3. Project code format — keep auto-generated for now
-4. strategic_bet_id — add to ON CONFLICT clause
-5. project_type column — add to projects table
+**Decisions resolved:**
+1. Session log — docs/session-logs.md is canonical
+2. Portfolio IDs — all discovered (see Portfolio IDs section)
+3. Project code format — keep auto-generated ('P-' || asana_id)
+4. strategic_bet_id — added to ON CONFLICT clause in upsert_project
+5. project_type column — added to projects table and upsert_project function
 
-**Added to scope:** Daily morale tracking from Slack (1-10 rating)
+**Added to scope:** Daily morale tracking from Slack (1-10 rating), Fun Question of the Day
 
 ---
 
 ## Current Status
 
 ### Working
-- Database schema complete
-- Metabase connected and dashboard built (needs real data)
-- Asana API call returning project data with all fields
+- Database schema complete (all columns, constraints, functions match production)
+- Metabase persistent via metabase_app PostgreSQL database (not H2)
+- Two Metabase dashboards built: Strategy 2026 (8 questions), Focus Cycle View (4 questions)
+- Make.com project sync: all 5 branches (B1-B4 + Upcoming) working with upsert_project
+- Make.com milestone sync: all bet branches syncing native milestones via upsert_milestone
+- Slack Bot (BsB Strategy Bot) connected to Metabase alerts
+- HTTPS confirmed on Sevalla domain
 
-### In Progress
-- Make.com scenario: mapping Iterator output to upsert_project parameters
+### Designed but Not Yet Implemented
+- Daily check-in system (mood & busyness) — schema and Make.com guide ready
+- Fun Question of the Day — Google Sheets + Slack Workflow approach documented
 
 ### Next Steps
-1. Apply database fixes (strategic_bet_id update, project_type column)
-2. Complete Make.com field mapping
-3. Test sync with IO submission project
-4. Add remaining portfolio API calls (B1, B2, B4)
-5. Build milestone sync scenario
-6. Build strategy milestone sync scenario
-7. Build proposal sync scenario
-8. Design morale tracking schema
-9. Set up scheduled runs
-10. Slack notifications
+1. Run `sql/checkin-schema.sql` on Sevalla PostgreSQL
+2. Build Make.com check-in scenarios (daily post + webhook handler)
+3. Configure Slack interactivity for check-in modal
+4. Build Metabase check-in dashboard cards
+5. Set up Google Sheet + Slack Workflows for fun questions
+6. Build Make.com scenarios for Slack status notifications (replacing unreliable Metabase→Slack)
+7. Add dashboard filters (bet, status, department) to Strategy 2026 dashboard
+8. Populate Asana with all FC1 projects
+9. Build strategy milestone sync scenario
+10. Build proposal sync scenario
+11. Set up scheduled Make.com runs
+12. Produce strategy system manual/documentation
 
 ---
 
@@ -333,20 +360,29 @@ Parameters (10):
 
 ## Morale Tracking
 
-**Source:** Daily Slack poll asking team to rate mood 1-10
+Two separate daily Slack interactions:
 
-**Requirements:**
-- Store daily responses (user, date, rating)
-- Chart aggregate mood over time (daily/weekly average)
-- Visible on dashboard alongside project health
+1. **Mood & Busyness Check-in** — anonymous 1-10 ratings via Slack modal, stored in PostgreSQL, charted in Metabase. Built with Make.com + Slack interactivity (BsB Strategy Bot).
+2. **Fun Question of the Day** — Google Sheet + Slack Workflow Builder ([Aaron Heth approach](https://aaronheth.medium.com/slack-hack-make-a-completely-automated-question-of-the-day-system-for-your-team-with-no-plugins-4dbdd26a0573)). No database involvement.
 
-**Status:** Not started — schema design pending
+**Anonymity:** Slack modal submissions include user_id but Make.com deliberately does not store it. Only response_date, mood_rating, busyness_rating go into PostgreSQL. Metabase cards should filter to 3+ responses/day on small teams.
 
-**Questions to resolve:**
-- Which Slack channel?
-- Anonymous or attributed responses?
-- How is the poll triggered? (Slack workflow, bot, manual)
-- Store individual responses or just daily aggregates?
+**Status:** Schema and Make.com guide complete, implementation not started.
+
+**Files:**
+- `sql/checkin-schema.sql` — table, function, views (ready to run)
+- `docs/daily-checkin-setup.md` — full step-by-step setup guide
+
+**Implementation order:**
+1. Run schema SQL on Sevalla PostgreSQL
+2. Create Make.com Scenario 2 (webhook + router) — need URL before Slack config
+3. Enable Interactivity on BsB Strategy Bot, set Request URL to webhook
+4. Complete Scenario 2 branches (button→modal, submission→insert_checkin)
+5. Create Make.com Scenario 1 (scheduled daily post with Block Kit button)
+6. Test full flow end-to-end
+7. Build Metabase dashboard cards
+8. Set up Google Sheet + Slack Workflows for fun questions
+9. Announce to team, disable DailyBot
 
 ---
 

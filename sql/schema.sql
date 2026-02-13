@@ -1,6 +1,6 @@
 -- BsB Strategy Planning System
 -- Database Schema
--- Last updated: 2026-02-02
+-- Last updated: 2026-02-13
 
 -- ============================================
 -- TABLES
@@ -60,6 +60,7 @@ CREATE TABLE projects (
                           percent_complete DECIMAL(5,2) DEFAULT 0,
                           start_cycle_id INTEGER REFERENCES focus_cycles(id),
                           end_cycle_id INTEGER REFERENCES focus_cycles(id),
+                          project_type TEXT,
                           created_at TIMESTAMP DEFAULT NOW(),
                           updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -67,11 +68,12 @@ CREATE TABLE projects (
 CREATE TABLE milestones (
                             id SERIAL PRIMARY KEY,
                             asana_milestone_id TEXT UNIQUE,
+                            code VARCHAR(50) NOT NULL,
                             project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
                             name VARCHAR(255) NOT NULL,
                             target_date DATE,
-                            status VARCHAR(20) DEFAULT 'not_started'
-                                CHECK (status IN ('not_started', 'in_progress', 'complete', 'missed')),
+                            status VARCHAR(20) DEFAULT 'upcoming'
+                                CHECK (status IN ('upcoming', 'in_progress', 'complete', 'blocked', 'cancelled')),
                             focus_cycle_id INTEGER REFERENCES focus_cycles(id),
                             tasks_total INTEGER DEFAULT 0,
                             tasks_complete INTEGER DEFAULT 0,
