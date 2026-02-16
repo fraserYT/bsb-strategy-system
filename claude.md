@@ -349,9 +349,11 @@ Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = mile
 ### Working
 - Database schema complete (all columns, constraints, functions match production)
 - Metabase persistent via metabase_app PostgreSQL database (not H2)
-- Two Metabase dashboards built: Strategy 2026 (9 questions), Focus Cycle View (4 questions)
+- One Metabase dashboard: Strategy 2026 (15 questions)
 - Make.com project sync: all 5 branches (B1-B4 + Upcoming) working with upsert_project
-- Make.com milestone sync: all initiative branches syncing native milestones via upsert_milestone
+- Make.com milestone sync: all initiative branches syncing native milestones via upsert_milestone (7 params, tag sync ready)
+- Database migrated: initiatives renamed (B1-B5), strategic_bet_tags + milestone_bet_tags tables live
+- Views updated: v_milestone_timeline (with initiative + tag columns), v_milestone_tags
 - Slack Bot (BsB Strategy Bot) connected to Metabase alerts
 - HTTPS confirmed on Sevalla domain
 
@@ -360,18 +362,20 @@ Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = mile
 - Fun Question of the Day — Google Sheets + Slack Workflow approach documented
 
 ### Next Steps
-1. Run `sql/checkin-schema.sql` on Sevalla PostgreSQL
-2. Build Make.com check-in scenarios (daily post + webhook handler)
-3. Configure Slack interactivity for check-in modal
-4. Build Metabase check-in dashboard cards
-5. Set up Google Sheet + Slack Workflows for fun questions
-6. Build Make.com scenarios for Slack status notifications (replacing unreliable Metabase→Slack)
-7. Add dashboard filters (bet, status, department) to Strategy 2026 dashboard
-8. Populate Asana with all FC1 projects
-9. Build strategy milestone sync scenario
-10. Build proposal sync scenario
-11. Set up scheduled Make.com runs
-12. Produce strategy system manual/documentation
+1. Asana: Create "Strategic Bet" multi-select custom field, share across projects
+2. Asana: Create B5 portfolio, rename B1-B4 portfolios
+3. Make.com: Add B5 branch, update all milestone sync modules with 7th param (`p_strategic_bet_tags`)
+4. Run `sql/checkin-schema.sql` on Sevalla PostgreSQL
+5. Build Make.com check-in scenarios (daily post + webhook handler)
+6. Configure Slack interactivity for check-in modal
+7. Build Metabase check-in dashboard cards
+8. Set up Google Sheet + Slack Workflows for fun questions
+9. Build Make.com scenarios for Slack status notifications (replacing unreliable Metabase→Slack)
+10. Add dashboard filters (initiative, status, department) to Strategy 2026 dashboard
+11. Populate Asana with all FC1 projects
+12. Build proposal sync scenario
+13. Set up scheduled Make.com runs
+14. Produce strategy system manual/documentation
 
 ---
 
@@ -380,6 +384,7 @@ Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = mile
 - Focus cycle values in Asana include "2026 " prefix — stripped during sync
 - Make.com custom field extraction requires get() function
 - Must refresh Make.com function list after database changes
+- Sevalla SQL studio doesn't support `$$` dollar-quoting — use `$fn$` for PL/pgSQL functions
 
 ---
 

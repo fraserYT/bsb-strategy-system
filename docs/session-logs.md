@@ -138,9 +138,18 @@
 
 **Key decision:** Keep `strategic_bets` table name as-is — renaming every FK, view, and function adds risk with no user-facing benefit. Metabase column aliases control what users see.
 
+**Deployed to production:**
+- Ran `sql/migrate-initiatives.sql` on Sevalla PostgreSQL (tables, data, indexes created; function needed `$fn$` quoting for Sevalla studio)
+- Updated `upsert_milestone` function (7 params) — deployed separately due to `$$` parse issue
+- Deployed `v_milestone_timeline` and `v_milestone_tags` views
+- Updated all Metabase queries: "Bet" → "Initiative" across Q1-Q4, Q6, Q10-Q11
+- Added Strategic Bets column to Q3 (All Milestones) and Q10 (Milestones by Focus Cycle)
+- Added Q13 (Projects by Status), Q14 (Milestones by Strategic Bet Tag), Q15 (Milestone Timeline)
+- Restructured `docs/metabase-queries.md` — single Strategy 2026 dashboard with 15 questions (removed fictional Focus Cycle View section)
+
+**Note:** Sevalla SQL studio doesn't support `$$` dollar-quoting in PL/pgSQL functions. Use `$fn$` instead.
+
 **Remaining manual steps:**
 1. Asana: Create "Strategic Bet" multi-select custom field, share across projects
 2. Asana: Create B5 portfolio, rename B1-B4 portfolios
-3. Run `sql/migrate-initiatives.sql` on Sevalla PostgreSQL
-4. Make.com: Add B5 branch, update all milestone sync modules with 7th param
-5. Metabase: Update queries with new SQL from docs/metabase-queries.md
+3. Make.com: Add B5 branch, update all milestone sync modules with 7th param
