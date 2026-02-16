@@ -268,6 +268,27 @@ WHERE m.status != 'cancelled'
 ORDER BY sbt.name, m.target_date;
 ```
 
+### Question 15: Milestone Timeline (Scatter)
+
+Full-year view of all milestones clustered by focus cycle. Table visualization, ordered by cycle end date.
+
+```sql
+SELECT
+    fc.code AS "Focus Cycle",
+    fc.end_date AS "Cycle End",
+    sb.code AS "Initiative",
+    p.name AS "Project",
+    m.name AS "Milestone",
+    m.target_date AS "Due Date",
+    m.status AS "Status"
+FROM milestones m
+JOIN projects p ON m.project_id = p.id
+LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
+LEFT JOIN focus_cycles fc ON m.focus_cycle_id = fc.id
+WHERE m.status != 'cancelled'
+ORDER BY fc.end_date, sb.code, m.target_date;
+```
+
 ---
 
 ## Utility Queries
