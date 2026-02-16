@@ -6,6 +6,8 @@ Predefined SQL queries for Metabase dashboards. These complement the database vi
 
 ## Dashboard: Strategy 2026
 
+All questions live on a single dashboard.
+
 ### Question 1: Strategic Overview
 
 ```sql
@@ -43,7 +45,7 @@ LEFT JOIN focus_cycles fc_end ON p.end_cycle_id = fc_end.id
 ORDER BY sb.code, p.status;
 ```
 
-### Question 3: Roadmap — All Milestones
+### Question 3: All Milestones
 
 ```sql
 SELECT
@@ -67,22 +69,23 @@ WHERE m.status != 'cancelled'
 ORDER BY m.target_date;
 ```
 
-### Question 4: Roadmap — By Month (for charting)
+### Question 4: Alerts — Needs Attention
 
 ```sql
 SELECT
-    TO_CHAR(m.target_date, 'YYYY-MM') AS "Month",
+    p.name AS "Project",
+    p.status AS "Status",
+    p.project_lead AS "Lead",
     sb.code AS "Initiative",
-    COUNT(*) AS "Milestones"
-FROM milestones m
-LEFT JOIN projects p ON m.project_id = p.id
+    d.name AS "Team"
+FROM projects p
 LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
-WHERE m.status != 'cancelled'
-GROUP BY TO_CHAR(m.target_date, 'YYYY-MM'), sb.code
-ORDER BY "Month", sb.code;
+LEFT JOIN departments d ON p.owning_department_id = d.id
+WHERE p.status IN ('at_risk', 'blocked')
+ORDER BY p.status, sb.code;
 ```
 
-### Question 5: Current Cycle — Due
+### Question 5: Cycle — Due
 
 ```sql
 SELECT
@@ -100,20 +103,19 @@ WHERE fc.start_date <= CURRENT_DATE
 ORDER BY m.target_date;
 ```
 
-### Question 6: Alerts — Needs Attention
+### Question 6: Roadmap by Month
 
 ```sql
 SELECT
-    p.name AS "Project",
-    p.status AS "Status",
-    p.project_lead AS "Lead",
+    TO_CHAR(m.target_date, 'YYYY-MM') AS "Month",
     sb.code AS "Initiative",
-    d.name AS "Team"
-FROM projects p
+    COUNT(*) AS "Milestones"
+FROM milestones m
+LEFT JOIN projects p ON m.project_id = p.id
 LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
-LEFT JOIN departments d ON p.owning_department_id = d.id
-WHERE p.status IN ('at_risk', 'blocked')
-ORDER BY p.status, sb.code;
+WHERE m.status != 'cancelled'
+GROUP BY TO_CHAR(m.target_date, 'YYYY-MM'), sb.code
+ORDER BY "Month", sb.code;
 ```
 
 ### Question 7: Progress Summary
@@ -134,49 +136,7 @@ SELECT
 FROM milestones;
 ```
 
-### Question 8: Upcoming Projects (Pipeline)
-
-```sql
-SELECT
-    p.name AS "Project",
-    sc.code AS "Start Cycle",
-    ec.code AS "End Cycle",
-    p.status AS "Status"
-FROM projects p
-LEFT JOIN focus_cycles sc ON p.start_cycle_id = sc.id
-LEFT JOIN focus_cycles ec ON p.end_cycle_id = ec.id
-WHERE p.strategic_bet_id IS NULL
-ORDER BY p.name;
-```
-
-### Question 9: Milestones by Strategic Bet Tag
-
-Cross-initiative view showing which milestones contribute to each original strategic bet.
-
-```sql
-SELECT
-    sbt.name AS "Strategic Bet",
-    m.name AS "Milestone",
-    p.name AS "Project",
-    sb.code AS "Initiative",
-    m.target_date AS "Due Date",
-    fc.code AS "Cycle",
-    m.status AS "Status"
-FROM milestone_bet_tags mbt
-JOIN strategic_bet_tags sbt ON mbt.strategic_bet_tag_id = sbt.id
-JOIN milestones m ON mbt.milestone_id = m.id
-JOIN projects p ON m.project_id = p.id
-LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
-LEFT JOIN focus_cycles fc ON m.focus_cycle_id = fc.id
-WHERE m.status != 'cancelled'
-ORDER BY sbt.name, m.target_date;
-```
-
----
-
-## Dashboard: Focus Cycle View
-
-### Question 1: Cycle Overview
+### Question 8: Focus Cycles 2026
 
 ```sql
 SELECT
@@ -193,7 +153,24 @@ FROM focus_cycles fc
 ORDER BY fc.start_date;
 ```
 
-### Question 2: Milestones by Cycle (with optional filter)
+### Question 9: Upcoming Projects (Pipeline)
+
+```sql
+SELECT
+    p.name AS "Project",
+    sc.code AS "Start Cycle",
+    ec.code AS "End Cycle",
+    p.status AS "Status"
+FROM projects p
+LEFT JOIN focus_cycles sc ON p.start_cycle_id = sc.id
+LEFT JOIN focus_cycles ec ON p.end_cycle_id = ec.id
+WHERE p.strategic_bet_id IS NULL
+ORDER BY p.name;
+```
+
+### Question 10: Milestones by Focus Cycle
+
+Optional `{{cycle}}` filter parameter.
 
 ```sql
 SELECT
@@ -216,7 +193,9 @@ LEFT JOIN focus_cycles fc ON m.focus_cycle_id = fc.id
 ORDER BY m.target_date;
 ```
 
-### Question 3: Projects Active in Cycle (with optional filter)
+### Question 11: Projects Alive in Cycle
+
+Optional `{{cycle}}` filter parameter.
 
 ```sql
 SELECT
@@ -235,7 +214,9 @@ LEFT JOIN focus_cycles ec ON p.end_cycle_id = ec.id
 ORDER BY sb.code, p.name;
 ```
 
-### Question 4: Cycle Progress (with optional filter)
+### Question 12: Cycle Progress
+
+Optional `{{cycle}}` filter parameter.
 
 ```sql
 SELECT
@@ -246,6 +227,45 @@ SELECT
 FROM milestones m
 LEFT JOIN focus_cycles fc ON m.focus_cycle_id = fc.id
 [[WHERE fc.code = {{cycle}}]];
+```
+
+### Question 13: Projects by Status
+
+```sql
+SELECT
+    p.name AS "Project",
+    p.status AS "Status",
+    p.project_lead AS "Lead",
+    sb.code AS "Initiative",
+    d.name AS "Team"
+FROM projects p
+LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
+LEFT JOIN departments d ON p.owning_department_id = d.id
+WHERE p.strategic_bet_id IS NOT NULL
+ORDER BY p.status, p.name;
+```
+
+### Question 14: Milestones by Strategic Bet Tag
+
+Cross-initiative view showing which milestones contribute to each original strategic bet.
+
+```sql
+SELECT
+    sbt.name AS "Strategic Bet",
+    m.name AS "Milestone",
+    p.name AS "Project",
+    sb.code AS "Initiative",
+    m.target_date AS "Due Date",
+    fc.code AS "Cycle",
+    m.status AS "Status"
+FROM milestone_bet_tags mbt
+JOIN strategic_bet_tags sbt ON mbt.strategic_bet_tag_id = sbt.id
+JOIN milestones m ON mbt.milestone_id = m.id
+JOIN projects p ON m.project_id = p.id
+LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
+LEFT JOIN focus_cycles fc ON m.focus_cycle_id = fc.id
+WHERE m.status != 'cancelled'
+ORDER BY sbt.name, m.target_date;
 ```
 
 ---
