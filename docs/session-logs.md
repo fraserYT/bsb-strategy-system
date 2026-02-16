@@ -149,7 +149,9 @@
 
 **Note:** Sevalla SQL studio doesn't support `$$` dollar-quoting in PL/pgSQL functions. Use `$fn$` instead.
 
-**Remaining manual steps:**
-1. Asana: Create "Strategic Bet" multi-select custom field, share across projects
-2. Asana: Create B5 portfolio, rename B1-B4 portfolios
-3. Make.com: Add B5 branch, update all milestone sync modules with 7th param
+**Completed manually:**
+- Asana: Renamed B1-B4 portfolios, created B5 portfolio, added "Strategic Bet" multi-select custom field to all projects
+- Make.com: Added B5 initiative branch to sync scenario
+
+**Remaining:**
+- Make.com: Update all milestone sync modules with 7th param (`p_strategic_bet_tags`)

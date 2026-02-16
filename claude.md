@@ -350,7 +350,7 @@ Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = mile
 - Database schema complete (all columns, constraints, functions match production)
 - Metabase persistent via metabase_app PostgreSQL database (not H2)
 - One Metabase dashboard: Strategy 2026 (15 questions)
-- Make.com project sync: all 5 branches (B1-B4 + Upcoming) working with upsert_project
+- Make.com project sync: all 6 branches (B1-B5 + Upcoming) working with upsert_project
 - Make.com milestone sync: all initiative branches syncing native milestones via upsert_milestone (7 params, tag sync ready)
 - Database migrated: initiatives renamed (B1-B5), strategic_bet_tags + milestone_bet_tags tables live
 - Views updated: v_milestone_timeline (with initiative + tag columns), v_milestone_tags
@@ -362,10 +362,8 @@ Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = mile
 - Fun Question of the Day — Google Sheets + Slack Workflow approach documented
 
 ### Next Steps
-1. Asana: Create "Strategic Bet" multi-select custom field, share across projects
-2. Asana: Create B5 portfolio, rename B1-B4 portfolios
-3. Make.com: Add B5 branch, update all milestone sync modules with 7th param (`p_strategic_bet_tags`)
-4. Run `sql/checkin-schema.sql` on Sevalla PostgreSQL
+1. Make.com: Update all milestone sync modules with 7th param (`p_strategic_bet_tags`)
+2. Run `sql/checkin-schema.sql` on Sevalla PostgreSQL
 5. Build Make.com check-in scenarios (daily post + webhook handler)
 6. Configure Slack interactivity for check-in modal
 7. Build Metabase check-in dashboard cards
