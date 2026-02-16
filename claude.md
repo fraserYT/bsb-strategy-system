@@ -5,7 +5,7 @@
 Building an automated planning and execution system for annual strategy delivery.
 
 **Goals:**
-- Track projects aligned to 4 strategic bets across 6 focus cycles (8-week sprints)
+- Track projects aligned to 5 initiatives (formerly "strategic bets") across 6 focus cycles (8-week sprints)
 - Automate sync between Asana (source of truth) and PostgreSQL (reporting hub)
 - Dashboard visibility via Metabase
 - Slack notifications for check-ins and progress
@@ -49,32 +49,46 @@ Building an automated planning and execution system for annual strategy delivery
 
 | Table | Purpose |
 |-------|---------|
-| `strategic_bets` | 4 annual bets (B1-B4) |
+| `strategic_bets` | 5 initiatives (B1-B5), table name kept for FK compatibility |
 | `focus_cycles` | 6 eight-week cycles (FC1-FC6) |
 | `departments` | 10 teams |
 | `users` | Staff members (synced from Asana) |
-| `projects` | Projects within bets |
+| `projects` | Projects within initiatives |
 | `milestones` | Native Asana milestones within projects |
-| `strategy_milestones` | High-level outcomes per bet |
+| `strategic_bet_tags` | 4 cross-cutting bet tags (multi-select on milestones) |
+| `milestone_bet_tags` | Junction table linking milestones to bet tags |
+| `strategy_milestones` | High-level outcomes per initiative |
 | `proposals` | Intake pipeline items |
 | `progress_snapshots` | Point-in-time progress records |
 
 ### Key Relationships
 
-- Projects belong to one strategic bet and one department
+- Projects belong to one initiative and one department
 - Projects have a project lead (user)
 - Projects span focus cycles (start_cycle_id, end_cycle_id)
 - Milestones belong to one project and one focus cycle
 - Users linked by asana_user_id
 
-### Strategic Bets
+### Initiatives (table: `strategic_bets`)
 
 | Code | Name |
 |------|------|
-| B1 | Video-Led Mentor Content |
-| B2 | Informed Standardisation |
-| B3 | Capacity through Automation |
-| B4 | Owned Audience over SEO |
+| B1 | Build Mentor Machine |
+| B2 | Standardise Sales and Marketing Processes |
+| B3 | Automate Key Processes |
+| B4 | Optimise Subscriber Growth Engine |
+| B5 | Rebrand to reflect who we are now |
+
+### Strategic Bet Tags (table: `strategic_bet_tags`)
+
+Cross-cutting tags applied to milestones via multi-select custom field in Asana. These are the original 4 bet concepts:
+
+| Tag |
+|-----|
+| Video-Led Mentor Content |
+| Informed Standardisation |
+| Capacity through Automation |
+| Owned Audience over SEO |
 
 ### Departments (Teams)
 
@@ -111,11 +125,12 @@ Building an automated planning and execution system for annual strategy delivery
 ## Asana Structure
 
 ### Portfolio Hierarchy
-📁 🎯 BsB Strategy 2026 (top-level portfolio)  
-├── 📁 🧩 Video-Led Mentor Content (B1)  
-├── 📁 🧩 Informed Standardisation (B2)  
-├── 📁 🧩 Capacity through Automation (B3)  
-├── 📁 🧩 Owned Audience over SEO (B4)  
+📁 🎯 BsB Strategy 2026 (top-level portfolio)
+├── 📁 🧩 Build Mentor Machine (B1)
+├── 📁 🧩 Standardise Sales and Marketing Processes (B2)
+├── 📁 🧩 Automate Key Processes (B3)
+├── 📁 🧩 Optimise Subscriber Growth Engine (B4)
+├── 📁 🧩 Rebrand to reflect who we are now (B5)
 └── 📋 📥 Upcoming Projects (Intake Pipeline)
 
 
@@ -149,15 +164,17 @@ Building an automated planning and execution system for annual strategy delivery
 | Field | Type | Options |
 |-------|------|---------|
 | Focus Cycle | Dropdown | FC1-FC6 |
+| Strategic Bet | Multi-select | Video-Led Mentor Content, Informed Standardisation, Capacity through Automation, Owned Audience over SEO |
 
 ### Portfolio IDs
 
 | Portfolio | Asana GID |
 |-----------|-----------|
-| 🧩 Video-Led Mentor Content (B1) | 1213026203855296 |
-| 🧩 Informed Standardisation (B2) | 1213026203855292 |
-| 🧩 Capacity through Automation (B3) | 1213026203855288 |
-| 🧩 Owned Audience over SEO (B4) | 1213026203855284 |
+| 🧩 Build Mentor Machine (B1) | 1213026203855296 |
+| 🧩 Standardise Sales and Marketing Processes (B2) | 1213026203855292 |
+| 🧩 Automate Key Processes (B3) | 1213026203855288 |
+| 🧩 Optimise Subscriber Growth Engine (B4) | 1213026203855284 |
+| 🧩 Rebrand to reflect who we are now (B5) | 1213297368366399 |
 | 📥 Upcoming Projects | 1213046199918957 |
 
 ---
@@ -196,7 +213,7 @@ Full query templates: [`docs/metabase-queries.md`](docs/metabase-queries.md)
 
 **Status:** In progress
 
-**Structure:** Router with branches for each portfolio (B1, B2, B3, B4, Upcoming Projects). Each branch:
+**Structure:** Router with branches for each portfolio (B1, B2, B3, B4, B5, Upcoming Projects). Each branch:
 1. Asana — Make an API Call → `GET /1.0/portfolios/{portfolio_gid}/items`
 2. Iterator → iterate through projects
 3. PostgreSQL — Execute Function → `upsert_project()`
@@ -205,9 +222,12 @@ Full query templates: [`docs/metabase-queries.md`](docs/metabase-queries.md)
 
 | Portfolio | Asana GID |
 |-----------|-----------|
+| B1: Build Mentor Machine | `1213026203855296` |
+| B2: Standardise Sales and Marketing Processes | `1213026203855292` |
+| B3: Automate Key Processes | `1213026203855288` |
+| B4: Optimise Subscriber Growth Engine | `1213026203855284` |
+| B5: Rebrand to reflect who we are now | `1213297368366399` |
 | Upcoming Projects | `1213046199918957` |
-| B3: Capacity through Automation | `1213026203855288` |
-| B1, B2, B4 | *(obtain from Asana URLs)* |
 
 **Key mappings:**
 - `strategic_bet_id = NULL` for Upcoming Projects branch
@@ -229,7 +249,7 @@ Full query templates: [`docs/metabase-queries.md`](docs/metabase-queries.md)
 | p_end_cycle | `{{5.custom_fields[N].display_value}}` (End Cycle field) |
 | p_project_type | `{{5.custom_fields[N].display_value}}` (Project Type field) |
 
-**Function: upsert_milestone** (6 parameters)
+**Function: upsert_milestone** (7 parameters)
 
 | Parameter | Source |
 |-----------|--------|
@@ -239,13 +259,16 @@ Full query templates: [`docs/metabase-queries.md`](docs/metabase-queries.md)
 | p_target_date | milestone due_on |
 | p_completed | milestone completed boolean |
 | p_focus_cycle | Focus Cycle custom field display_value |
+| p_strategic_bet_tags | Strategic Bet custom field display_value (comma-separated, optional) |
 
 **Asana API query strings:**
 - Projects: `opt_fields: name,owner.name,owner.gid,current_status_update.status_type,custom_fields.name,custom_fields.display_value`
 - Milestones: `opt_fields: name,due_on,completed,resource_subtype,custom_fields.name,custom_fields.display_value`
 
-**Milestone sync flow** (per bet branch):
+**Milestone sync flow** (per initiative branch):
 Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = milestone`) → PostgreSQL Execute Function (upsert_milestone)
+
+**Note:** After deploying the updated `upsert_milestone` function, refresh the function list in each PostgreSQL module in Make.com, then add the 7th parameter mapping for `p_strategic_bet_tags` → `{{N.custom_fields[X].display_value}}` (Strategic Bet multi-select field).
 
 ---
 
@@ -277,6 +300,8 @@ Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = mile
 | Native project owner | Avoid redundant custom field |
 | Users table with Asana ID | Future-proof linking, names can change |
 | Focus cycle values prefixed "2026 FC1" in Asana | Strip prefix during sync |
+| Keep `strategic_bets` table name | Avoid renaming every FK, view, function; Metabase aliases control display |
+| Initiatives vs bet tags | Initiatives = portfolios (B1-B5); bet tags = cross-cutting multi-select on milestones |
 
 ---
 
@@ -324,9 +349,9 @@ Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = mile
 ### Working
 - Database schema complete (all columns, constraints, functions match production)
 - Metabase persistent via metabase_app PostgreSQL database (not H2)
-- Two Metabase dashboards built: Strategy 2026 (8 questions), Focus Cycle View (4 questions)
+- Two Metabase dashboards built: Strategy 2026 (9 questions), Focus Cycle View (4 questions)
 - Make.com project sync: all 5 branches (B1-B4 + Upcoming) working with upsert_project
-- Make.com milestone sync: all bet branches syncing native milestones via upsert_milestone
+- Make.com milestone sync: all initiative branches syncing native milestones via upsert_milestone
 - Slack Bot (BsB Strategy Bot) connected to Metabase alerts
 - HTTPS confirmed on Sevalla domain
 

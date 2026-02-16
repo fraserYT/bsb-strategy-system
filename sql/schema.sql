@@ -1,6 +1,6 @@
 -- BsB Strategy Planning System
 -- Database Schema
--- Last updated: 2026-02-13
+-- Last updated: 2026-02-16
 
 -- ============================================
 -- TABLES
@@ -122,6 +122,20 @@ CREATE TABLE progress_snapshots (
                                     created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE strategic_bet_tags (
+                                    id SERIAL PRIMARY KEY,
+                                    name VARCHAR(255) UNIQUE NOT NULL,
+                                    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE milestone_bet_tags (
+                                    id SERIAL PRIMARY KEY,
+                                    milestone_id INTEGER REFERENCES milestones(id) ON DELETE CASCADE,
+                                    strategic_bet_tag_id INTEGER REFERENCES strategic_bet_tags(id) ON DELETE CASCADE,
+                                    created_at TIMESTAMP DEFAULT NOW(),
+                                    UNIQUE (milestone_id, strategic_bet_tag_id)
+);
+
 -- ============================================
 -- INDEXES
 -- ============================================
@@ -132,6 +146,8 @@ CREATE INDEX idx_projects_status ON projects(status);
 CREATE INDEX idx_milestones_project ON milestones(project_id);
 CREATE INDEX idx_milestones_cycle ON milestones(focus_cycle_id);
 CREATE INDEX idx_users_asana_id ON users(asana_user_id);
+CREATE INDEX idx_milestone_bet_tags_milestone ON milestone_bet_tags(milestone_id);
+CREATE INDEX idx_milestone_bet_tags_tag ON milestone_bet_tags(strategic_bet_tag_id);
 
 -- ============================================
 -- VIEWS
@@ -235,13 +251,41 @@ SELECT
     m.status,
     p.name as project_name,
     p.code as project_code,
+    sb.code as initiative_code,
+    sb.name as initiative_name,
     fc.code as cycle_code,
-    d.name as dept_name
+    d.name as dept_name,
+    (
+        SELECT STRING_AGG(sbt.name, ', ' ORDER BY sbt.name)
+        FROM milestone_bet_tags mbt
+        JOIN strategic_bet_tags sbt ON mbt.strategic_bet_tag_id = sbt.id
+        WHERE mbt.milestone_id = m.id
+    ) as strategic_bet_tags
 FROM milestones m
          JOIN projects p ON m.project_id = p.id
+         LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
          LEFT JOIN focus_cycles fc ON m.focus_cycle_id = fc.id
          LEFT JOIN departments d ON p.owning_department_id = d.id
 ORDER BY m.target_date;
+
+CREATE VIEW v_milestone_tags AS
+SELECT
+    m.id as milestone_id,
+    m.name as milestone_name,
+    m.target_date,
+    m.status as milestone_status,
+    p.name as project_name,
+    sb.code as initiative_code,
+    sb.name as initiative_name,
+    sbt.name as strategic_bet_tag,
+    fc.code as cycle_code
+FROM milestone_bet_tags mbt
+         JOIN milestones m ON mbt.milestone_id = m.id
+         JOIN strategic_bet_tags sbt ON mbt.strategic_bet_tag_id = sbt.id
+         JOIN projects p ON m.project_id = p.id
+         LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
+         LEFT JOIN focus_cycles fc ON m.focus_cycle_id = fc.id
+ORDER BY sbt.name, m.target_date;
 
 CREATE VIEW v_at_risk_projects AS
 SELECT
@@ -265,10 +309,17 @@ ORDER BY p.status, p.updated_at;
 -- ============================================
 
 INSERT INTO strategic_bets (code, name) VALUES
-                                            ('B1', 'Video-Led Mentor Content'),
-                                            ('B2', 'Informed Standardisation'),
-                                            ('B3', 'Capacity through Automation'),
-                                            ('B4', 'Owned Audience over SEO');
+                                            ('B1', 'Build Mentor Machine'),
+                                            ('B2', 'Standardise Sales and Marketing Processes'),
+                                            ('B3', 'Automate Key Processes'),
+                                            ('B4', 'Optimise Subscriber Growth Engine'),
+                                            ('B5', 'Rebrand to reflect who we are now');
+
+INSERT INTO strategic_bet_tags (name) VALUES
+                                          ('Video-Led Mentor Content'),
+                                          ('Informed Standardisation'),
+                                          ('Capacity through Automation'),
+                                          ('Owned Audience over SEO');
 
 INSERT INTO focus_cycles (code, name, start_date, end_date, status) VALUES
                                                                         ('FC1', '2026 Cycle 1', '2026-02-23', '2026-04-05', 'upcoming'),

@@ -1,6 +1,6 @@
 -- BsB Strategy Planning System
 -- Database Functions
--- Last updated: 2026-02-13
+-- Last updated: 2026-02-16
 
 -- ============================================
 -- upsert_project
@@ -92,6 +92,7 @@ $$ LANGUAGE plpgsql;
 -- upsert_milestone
 -- Called by Make.com via PostgreSQL Execute Function module
 -- Maps Asana milestone data into the milestones table
+-- 7th param (p_strategic_bet_tags) is optional for backwards compatibility
 -- ============================================
 
 CREATE OR REPLACE FUNCTION upsert_milestone(
@@ -100,11 +101,14 @@ CREATE OR REPLACE FUNCTION upsert_milestone(
     p_name TEXT,
     p_target_date DATE,
     p_completed BOOLEAN,
-    p_focus_cycle TEXT
+    p_focus_cycle TEXT,
+    p_strategic_bet_tags TEXT DEFAULT NULL
 ) RETURNS VOID AS $$
 DECLARE
     v_project_id INTEGER;
+    v_milestone_id INTEGER;
     v_status TEXT;
+    v_tag TEXT;
 BEGIN
     -- Look up the parent project by its Asana ID
     SELECT id INTO v_project_id FROM projects WHERE asana_project_id = p_project_asana_id;
@@ -112,7 +116,7 @@ BEGIN
     -- Map completed boolean to status
     v_status := CASE WHEN p_completed THEN 'complete' ELSE 'upcoming' END;
 
-    -- Upsert milestone
+    -- Upsert milestone and capture ID
     INSERT INTO milestones (
         asana_milestone_id, code, project_id, name, target_date, status, focus_cycle_id
     )
@@ -130,6 +134,23 @@ BEGIN
         target_date = EXCLUDED.target_date,
         status = v_status,
         focus_cycle_id = (SELECT id FROM focus_cycles WHERE code = REPLACE(p_focus_cycle, '2026 ', '')),
-        updated_at = NOW();
+        updated_at = NOW()
+    RETURNING id INTO v_milestone_id;
+
+    -- Sync strategic bet tags (if provided)
+    IF p_strategic_bet_tags IS NOT NULL AND p_strategic_bet_tags != '' THEN
+        -- Clear existing tags for this milestone
+        DELETE FROM milestone_bet_tags WHERE milestone_id = v_milestone_id;
+
+        -- Insert each tag (comma-separated from Asana multi-select)
+        FOREACH v_tag IN ARRAY string_to_array(p_strategic_bet_tags, ',')
+        LOOP
+            INSERT INTO milestone_bet_tags (milestone_id, strategic_bet_tag_id)
+            SELECT v_milestone_id, sbt.id
+            FROM strategic_bet_tags sbt
+            WHERE sbt.name = TRIM(v_tag)
+            ON CONFLICT (milestone_id, strategic_bet_tag_id) DO NOTHING;
+        END LOOP;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;

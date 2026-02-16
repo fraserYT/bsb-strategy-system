@@ -10,7 +10,7 @@ Predefined SQL queries for Metabase dashboards. These complement the database vi
 
 ```sql
 SELECT
-    sb.code AS "Bet",
+    sb.code AS "Initiative",
     sb.name AS "Name",
     COUNT(DISTINCT p.id) AS "Projects",
     COUNT(DISTINCT m.id) AS "Milestones",
@@ -29,7 +29,7 @@ ORDER BY sb.code;
 ```sql
 SELECT
     p.name AS "Project",
-    sb.code AS "Bet",
+    sb.code AS "Initiative",
     d.name AS "Team",
     p.status AS "Status",
     p.project_lead AS "Lead",
@@ -50,9 +50,15 @@ SELECT
     m.target_date AS "Due Date",
     m.name AS "Milestone",
     p.name AS "Project",
-    sb.code AS "Bet",
+    sb.code AS "Initiative",
     fc.code AS "Cycle",
-    m.status AS "Status"
+    m.status AS "Status",
+    (
+        SELECT STRING_AGG(sbt.name, ', ' ORDER BY sbt.name)
+        FROM milestone_bet_tags mbt
+        JOIN strategic_bet_tags sbt ON mbt.strategic_bet_tag_id = sbt.id
+        WHERE mbt.milestone_id = m.id
+    ) AS "Strategic Bets"
 FROM milestones m
 LEFT JOIN projects p ON m.project_id = p.id
 LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
@@ -66,7 +72,7 @@ ORDER BY m.target_date;
 ```sql
 SELECT
     TO_CHAR(m.target_date, 'YYYY-MM') AS "Month",
-    sb.code AS "Bet",
+    sb.code AS "Initiative",
     COUNT(*) AS "Milestones"
 FROM milestones m
 LEFT JOIN projects p ON m.project_id = p.id
@@ -101,7 +107,7 @@ SELECT
     p.name AS "Project",
     p.status AS "Status",
     p.project_lead AS "Lead",
-    sb.code AS "Bet",
+    sb.code AS "Initiative",
     d.name AS "Team"
 FROM projects p
 LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
@@ -143,6 +149,29 @@ WHERE p.strategic_bet_id IS NULL
 ORDER BY p.name;
 ```
 
+### Question 9: Milestones by Strategic Bet Tag
+
+Cross-initiative view showing which milestones contribute to each original strategic bet.
+
+```sql
+SELECT
+    sbt.name AS "Strategic Bet",
+    m.name AS "Milestone",
+    p.name AS "Project",
+    sb.code AS "Initiative",
+    m.target_date AS "Due Date",
+    fc.code AS "Cycle",
+    m.status AS "Status"
+FROM milestone_bet_tags mbt
+JOIN strategic_bet_tags sbt ON mbt.strategic_bet_tag_id = sbt.id
+JOIN milestones m ON mbt.milestone_id = m.id
+JOIN projects p ON m.project_id = p.id
+LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
+LEFT JOIN focus_cycles fc ON m.focus_cycle_id = fc.id
+WHERE m.status != 'cancelled'
+ORDER BY sbt.name, m.target_date;
+```
+
 ---
 
 ## Dashboard: Focus Cycle View
@@ -170,9 +199,15 @@ ORDER BY fc.start_date;
 SELECT
     m.name AS "Milestone",
     p.name AS "Project",
-    sb.code AS "Bet",
+    sb.code AS "Initiative",
     m.target_date AS "Due",
-    m.status AS "Status"
+    m.status AS "Status",
+    (
+        SELECT STRING_AGG(sbt.name, ', ' ORDER BY sbt.name)
+        FROM milestone_bet_tags mbt
+        JOIN strategic_bet_tags sbt ON mbt.strategic_bet_tag_id = sbt.id
+        WHERE mbt.milestone_id = m.id
+    ) AS "Strategic Bets"
 FROM milestones m
 LEFT JOIN projects p ON m.project_id = p.id
 LEFT JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
@@ -186,7 +221,7 @@ ORDER BY m.target_date;
 ```sql
 SELECT
     p.name AS "Project",
-    sb.code AS "Bet",
+    sb.code AS "Initiative",
     p.project_lead AS "Lead",
     p.status AS "Status",
     sc.code AS "Start Cycle",

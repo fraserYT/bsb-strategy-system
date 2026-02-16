@@ -119,3 +119,28 @@
 - Synced sql/functions.sql with final upsert_project (status mapping, prefix stripping, NULL owner check) and upsert_milestone
 - Updated sql/schema.sql with code column on milestones, project_type on projects, corrected milestones status constraint
 - Updated claude.md with all portfolio IDs, resolved pending decisions, current status
+
+## 2026-02-16
+
+- **Migrated strategic bets → initiatives + milestone tags**
+- Renamed B1-B4 initiatives: Build Mentor Machine, Standardise Sales and Marketing Processes, Automate Key Processes, Optimise Subscriber Growth Engine
+- Added B5: Rebrand to reflect who we are now
+- Created `strategic_bet_tags` table (4 original bet names as cross-cutting tags)
+- Created `milestone_bet_tags` junction table (milestone ↔ tag many-to-many)
+- Updated `upsert_milestone` function: 7th param `p_strategic_bet_tags` (comma-separated, DEFAULT NULL for backwards compatibility)
+- Updated `v_milestone_timeline` view: added `initiative_code`, `initiative_name`, `strategic_bet_tags` columns
+- Created `v_milestone_tags` view: one row per milestone-tag pair for Metabase filtering
+- Updated Metabase queries: "Bet" → "Initiative" aliases (Q1-Q4, Q6 Strategy; Q2-Q3 Focus Cycle)
+- Added Strategic Bets column to Q3 Roadmap and Focus Cycle Q2
+- Added Q9: Milestones by Strategic Bet Tag (cross-initiative view)
+- Created `sql/migrate-initiatives.sql` — single transaction migration script for Sevalla
+- Updated claude.md: initiative names, new tables, Asana structure (B5 portfolio, Strategic Bet custom field), Make.com docs (7th param)
+
+**Key decision:** Keep `strategic_bets` table name as-is — renaming every FK, view, and function adds risk with no user-facing benefit. Metabase column aliases control what users see.
+
+**Remaining manual steps:**
+1. Asana: Create "Strategic Bet" multi-select custom field, share across projects
+2. Asana: Create B5 portfolio, rename B1-B4 portfolios
+3. Run `sql/migrate-initiatives.sql` on Sevalla PostgreSQL
+4. Make.com: Add B5 branch, update all milestone sync modules with 7th param
+5. Metabase: Update queries with new SQL from docs/metabase-queries.md
