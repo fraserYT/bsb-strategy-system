@@ -116,7 +116,14 @@ Bitesize Bio Shared Drive/
 - **Category folder** — groups IOs by product category (e.g. eBlasts, Webinars). For eBlasts and Webinars, the year is the year of the event, not the IO date.
 - **IO folder** — the specific folder for this IO, named with the client code, IO reference, date, and project name.
 
-The automation checks whether each tier already exists before creating it (find-or-create logic), so running for a returning client won't create duplicate folders.
+Folder creation is split by the **New Client** flag on the form:
+
+- **New client** — create all tiers top-down, none exist yet
+- **Existing client** — Tier 1 and Tier 2 already exist; search for them to get their folder IDs, then proceed downward
+- **Tier 3 (category) and Year folder** — always find-or-create, even for returning clients (they may not have had this product type or year before)
+- **Tier 4 (IO folder)** — always create, it is unique per IO
+
+This avoids the need for full find-or-create logic at every tier and keeps the Make.com flow straightforward. The root folder ID for `Client Projects` in the Shared Drive is stored as a constant in Make.com.
 
 ---
 
