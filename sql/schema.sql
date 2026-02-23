@@ -1,6 +1,6 @@
 -- BsB Strategy Planning System
 -- Database Schema
--- Last updated: 2026-02-16
+-- Last updated: 2026-02-23
 
 -- ============================================
 -- TABLES
@@ -134,6 +134,77 @@ CREATE TABLE milestone_bet_tags (
                                     strategic_bet_tag_id INTEGER REFERENCES strategic_bet_tags(id) ON DELETE CASCADE,
                                     created_at TIMESTAMP DEFAULT NOW(),
                                     UNIQUE (milestone_id, strategic_bet_tag_id)
+);
+
+-- ============================================
+-- CLIENT & IO TABLES
+-- (business operations data, separate from strategy/planning tables above)
+-- ============================================
+
+-- Master client list
+CREATE TABLE clients (
+    id                      SERIAL PRIMARY KEY,
+    client_name             VARCHAR(255) NOT NULL,
+    formatted_client_name   VARCHAR(255),
+    tla                     VARCHAR(20),
+    created_at              TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- One or more client codes per client (different subsidiaries, departments, etc.)
+-- Contains billing and contact details per code
+CREATE TABLE bsb_client_codes (
+    id                          SERIAL PRIMARY KEY,
+    bsb_client_code             VARCHAR(50) UNIQUE NOT NULL,
+    client_id                   INTEGER REFERENCES clients(id),
+    primary_contact             VARCHAR(255),
+    primary_contact_email       VARCHAR(255),
+    other_people_in_client_code TEXT,
+    payment_terms               VARCHAR(100),
+    po_required                 TEXT,
+    client_billing_contact      VARCHAR(255),
+    client_billing_email        VARCHAR(255),
+    client_billing_address      TEXT,
+    notes                       TEXT,
+    created_at                  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insertion Orders — populated by Make.com on new IO form submission
+-- bsb_client_code is a loose text reference (not FK) — new clients may not have a code yet
+-- asana_link, drive_link, goal_link are populated by a separate Make.com step after creation
+CREATE TABLE insertion_orders (
+    id                          SERIAL PRIMARY KEY,
+    io_reference                VARCHAR(255) UNIQUE NOT NULL,
+    salesperson_first_name      VARCHAR(255),
+    salesperson_last_name       VARCHAR(255),
+    salesperson_email           VARCHAR(255),
+    submission_date             TIMESTAMPTZ,
+    date_io_signed              TIMESTAMPTZ,
+    bsb_client_code             VARCHAR(50),
+    new_client                  BOOLEAN,
+    other_company               TEXT,
+    primary_contact_name        VARCHAR(255),
+    primary_contact_email       VARCHAR(255),
+    additional_contacts         TEXT,
+    salesperson_notes           TEXT,
+    product_type                VARCHAR(255),
+    signed_io_pdf_url           TEXT,
+    io_submission_permalink     TEXT,
+    company_name                VARCHAR(255),
+    formatted_company_name      VARCHAR(255),
+    asana_link                  TEXT,
+    drive_link                  TEXT,
+    goal_link                   TEXT,
+    created_at                  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Daily team check-in responses (anonymous — no user_id stored by design)
+-- See also: sql/checkin-schema.sql for views and insert function
+CREATE TABLE checkin_responses (
+    id              SERIAL PRIMARY KEY,
+    response_date   DATE NOT NULL DEFAULT CURRENT_DATE,
+    mood_rating     SMALLINT NOT NULL CHECK (mood_rating BETWEEN 1 AND 10),
+    busyness_rating SMALLINT NOT NULL CHECK (busyness_rating BETWEEN 1 AND 10),
+    created_at      TIMESTAMP DEFAULT NOW()
 );
 
 -- ============================================

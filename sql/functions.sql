@@ -1,6 +1,6 @@
 -- BsB Strategy Planning System
 -- Database Functions
--- Last updated: 2026-02-16
+-- Last updated: 2026-02-23
 
 -- ============================================
 -- upsert_project
@@ -154,3 +154,148 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- ============================================
+-- upsert_insertion_order
+-- Called by Make.com when a new IO submission is detected in Google Sheets
+-- Inserts a new record; silently skips if io_reference already exists (DO NOTHING)
+-- Returns the id of the inserted or existing record
+-- Dates expected in DD/MM/YYYY format (UK Google Sheets locale)
+-- new_client expected as "Yes"/"No" text from the sheet
+-- ============================================
+
+CREATE OR REPLACE FUNCTION upsert_insertion_order(
+    p_io_reference              TEXT,
+    p_salesperson_first_name    TEXT DEFAULT NULL,
+    p_salesperson_last_name     TEXT DEFAULT NULL,
+    p_salesperson_email         TEXT DEFAULT NULL,
+    p_submission_date           TEXT DEFAULT NULL,
+    p_date_io_signed            TEXT DEFAULT NULL,
+    p_bsb_client_code           TEXT DEFAULT NULL,
+    p_new_client                TEXT DEFAULT NULL,
+    p_other_company             TEXT DEFAULT NULL,
+    p_primary_contact_name      TEXT DEFAULT NULL,
+    p_primary_contact_email     TEXT DEFAULT NULL,
+    p_additional_contacts       TEXT DEFAULT NULL,
+    p_salesperson_notes         TEXT DEFAULT NULL,
+    p_product_type              TEXT DEFAULT NULL,
+    p_signed_io_pdf_url         TEXT DEFAULT NULL,
+    p_io_submission_permalink   TEXT DEFAULT NULL,
+    p_company_name              TEXT DEFAULT NULL,
+    p_formatted_company_name    TEXT DEFAULT NULL
+) RETURNS INTEGER AS $fn$
+DECLARE
+    v_id                INTEGER;
+    v_submission_date   TIMESTAMPTZ;
+    v_date_io_signed    TIMESTAMPTZ;
+BEGIN
+    -- Parse submission_date (ISO format YYYY-MM-DD from Google Sheets via Gravity Forms)
+    -- The sheet stores dates with a leading apostrophe (e.g. '2025-12-02) to force text format;
+    -- Make.com receives the value without the apostrophe.
+    BEGIN
+        v_submission_date := CASE
+            WHEN NULLIF(TRIM(p_submission_date), '') IS NULL THEN NULL
+            ELSE TRIM(p_submission_date)::timestamptz
+        END;
+    EXCEPTION WHEN OTHERS THEN
+        v_submission_date := NULL;
+    END;
+
+    -- Parse date_io_signed
+    BEGIN
+        v_date_io_signed := CASE
+            WHEN NULLIF(TRIM(p_date_io_signed), '') IS NULL THEN NULL
+            ELSE TRIM(p_date_io_signed)::timestamptz
+        END;
+    EXCEPTION WHEN OTHERS THEN
+        v_date_io_signed := NULL;
+    END;
+
+    INSERT INTO insertion_orders (
+        io_reference,
+        salesperson_first_name,
+        salesperson_last_name,
+        salesperson_email,
+        submission_date,
+        date_io_signed,
+        bsb_client_code,
+        new_client,
+        other_company,
+        primary_contact_name,
+        primary_contact_email,
+        additional_contacts,
+        salesperson_notes,
+        product_type,
+        signed_io_pdf_url,
+        io_submission_permalink,
+        company_name,
+        formatted_company_name
+    ) VALUES (
+        p_io_reference,
+        NULLIF(TRIM(p_salesperson_first_name), ''),
+        NULLIF(TRIM(p_salesperson_last_name), ''),
+        NULLIF(TRIM(p_salesperson_email), ''),
+        v_submission_date,
+        v_date_io_signed,
+        NULLIF(TRIM(p_bsb_client_code), ''),
+        CASE
+            WHEN UPPER(TRIM(p_new_client)) IN ('YES', 'TRUE', '1') THEN TRUE
+            WHEN UPPER(TRIM(p_new_client)) IN ('NO', 'FALSE', '0') THEN FALSE
+            ELSE NULL
+        END,
+        NULLIF(TRIM(p_other_company), ''),
+        NULLIF(TRIM(p_primary_contact_name), ''),
+        NULLIF(TRIM(p_primary_contact_email), ''),
+        NULLIF(TRIM(p_additional_contacts), ''),
+        NULLIF(TRIM(p_salesperson_notes), ''),
+        NULLIF(TRIM(p_product_type), ''),
+        NULLIF(TRIM(p_signed_io_pdf_url), ''),
+        NULLIF(TRIM(p_io_submission_permalink), ''),
+        NULLIF(TRIM(p_company_name), ''),
+        NULLIF(TRIM(p_formatted_company_name), '')
+    )
+    ON CONFLICT (io_reference) DO NOTHING
+    RETURNING id INTO v_id;
+
+    -- DO NOTHING means RETURNING yields NULL if record already existed — fetch existing id
+    IF v_id IS NULL THEN
+        SELECT id INTO v_id FROM insertion_orders WHERE io_reference = p_io_reference;
+    END IF;
+
+    RETURN v_id;
+END;
+$fn$ LANGUAGE plpgsql;
+
+
+-- ============================================
+-- update_insertion_order_links
+-- Called by Make.com after the Asana task, Asana goal, and Drive folder have been created
+-- Updates the three link fields on an existing insertion_orders record
+-- Only overwrites a field if a non-empty value is provided (preserves existing if not)
+-- goal_link is stored as a full URL; pass the raw GID from the Asana API response
+-- ============================================
+
+CREATE OR REPLACE FUNCTION update_insertion_order_links(
+    p_io_reference  TEXT,
+    p_asana_link    TEXT DEFAULT NULL,
+    p_drive_link    TEXT DEFAULT NULL,
+    p_goal_gid      TEXT DEFAULT NULL
+) RETURNS BOOLEAN AS $fn$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE insertion_orders SET
+        asana_link = COALESCE(NULLIF(TRIM(p_asana_link), ''), asana_link),
+        drive_link = COALESCE(NULLIF(TRIM(p_drive_link), ''), drive_link),
+        goal_link  = CASE
+            WHEN NULLIF(TRIM(p_goal_gid), '') IS NOT NULL
+            THEN 'https://app.asana.com/0/goal/' || TRIM(p_goal_gid)
+            ELSE goal_link
+        END
+    WHERE io_reference = p_io_reference;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows > 0;
+END;
+$fn$ LANGUAGE plpgsql;

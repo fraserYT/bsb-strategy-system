@@ -60,6 +60,10 @@ Building an automated planning and execution system for annual strategy delivery
 | `strategy_milestones` | High-level outcomes per initiative |
 | `proposals` | Intake pipeline items |
 | `progress_snapshots` | Point-in-time progress records |
+| `clients` | Master client list |
+| `bsb_client_codes` | One or more client codes per client, with billing/contact details |
+| `insertion_orders` | IO records, populated by Make.com on form submission |
+| `checkin_responses` | Anonymous daily mood/busyness ratings (see `checkin-schema.sql`) |
 
 ### Key Relationships
 
@@ -269,6 +273,98 @@ Full query templates: [`docs/metabase-queries.md`](docs/metabase-queries.md)
 Asana API Call (project tasks) → Iterator → Filter (`resource_subtype = milestone`) → PostgreSQL Execute Function (upsert_milestone)
 
 **Note:** After deploying the updated `upsert_milestone` function, refresh the function list in each PostgreSQL module in Make.com, then add the 7th parameter mapping for `p_strategic_bet_tags` → `{{N.custom_fields[X].display_value}}` (Strategic Bet multi-select field).
+
+---
+
+## IO Submission Automation
+
+### Overview
+
+Salesperson submits a new Insertion Order via a **Gravity Forms** form on an internal website. Responses land in a Google Sheet ("IO Submissions"). Make.com watches for new rows and automates project setup.
+
+**Future:** HubSpot will eventually replace Gravity Forms as the submission source (long-term).
+
+### Google Sheet Structure
+
+**Sheet: IO Forms** (columns A–V)
+| Col | Field |
+|-----|-------|
+| A | Salesperson |
+| B | Salesperson Email |
+| C | Submission Date |
+| D | Date IO Signed |
+| E | IO Reference |
+| F | BSB Client Code |
+| G | New Client (Yes/No) |
+| H | Other Company (Full Name) |
+| I | Primary Client Contact |
+| J | Primary Client Email |
+| K | Additional Client Contacts |
+| L | Salesperson Notes/Comments |
+| M | Product Type |
+| N | Signed Insertion Order PDF |
+| O | IO Submission Permalink |
+| P | Company Name |
+| Q | Formatted Company Name |
+| R | Asana Link *(written back by Make.com)* |
+| S | Drive Link *(written back by Make.com)* |
+| T | Goal Link/GID *(written back by Make.com)* |
+| U | Primary Client First Name |
+| V | Primary Client Surname |
+
+**Sheet: Products** (columns A–E)
+| Col | Field |
+|-----|-------|
+| A | Product Type |
+| B | Product Name |
+| C | Related IO (used to filter) |
+| D | Company Name |
+| E | Unique Code *(intended for unique ID write-back, not yet wired)* |
+
+**Date format note:** Dates are stored with a leading apostrophe in Sheets (e.g. `'2025-12-02`) to force text format. Make.com receives the value without the apostrophe as ISO format `YYYY-MM-DD`.
+
+### Make.com Scenarios
+
+Blueprint stored in: `make-blueprints/phase-1-io-submission-project-creation.json`
+
+**Phase 1 — Project Creation** (live)
+
+Trigger: Watch new rows on IO Forms sheet (limit 2/run)
+
+Flow:
+1. Aggregate deliverables from Products sheet into a text list
+2. **Branch A** — creation flow (sequential):
+   - Set variables (additionalContacts, combinedCompany)
+   - Build JSON → create Asana Goal (HTTP API)
+   - Create Asana task in IO submission log project
+   - Create "Notify Fraser" task in Dev Workload Planner *(test artefact, keep for now)*
+   - Generate Asana task link variable
+   - Create top-level Drive folder (`Process Automation/IOs/`)
+   - Post Slack message to `all-bitesizebio`
+   - Write Asana link, Drive link, Goal GID back to sheet (cols R, S, T)
+   - Iterate over deliverables; per deliverable:
+     - Generate unique ID (`EVENT-{IO Ref}-{6-char UUID}`)
+     - Create subfolder inside IO folder
+     - Route by Product Type → Live Event / eBlast (placeholders for Phase 2+)
+3. **Branch B** — DB insert *(currently parallel, race condition — see Known Issues)*
+
+**Known Issues / Pending Make.com Changes:**
+1. **Race condition:** Branch B reads link columns from original watch output (before Branch A writes them). Fix: move DB insert into Branch A after module 10, use actual module outputs for links
+2. **Rerun safety:** Replace `InsertIntoTable` with `Execute Function → upsert_insertion_order` (handles ON CONFLICT)
+3. **Add links update step:** Add `Execute Function → update_insertion_order_links` at end of Branch A passing `{{9.Asana Link}}`, `https://drive.google.com/drive/u/0/folders/{{12.id}}`, `{{14.data.data.gid}}`
+4. **`additionalContactsJ` variable:** Carriage return stripping for JSON encoding not working — outstanding
+
+**Product Type routing (inner router, per deliverable):**
+- `Live Event` → sub-routes: Leica/MF = placeholder; non-Leica BsB = duplicate Asana project from template + generate pre-filled registration form URL
+- `eBlast` → placeholder
+- More product types to be added in future phases
+
+### IO Submission Functions
+
+| Function | Purpose |
+|----------|---------|
+| `upsert_insertion_order(...)` | Insert new IO record; ON CONFLICT DO NOTHING; returns id |
+| `update_insertion_order_links(io_ref, asana, drive, goal_gid)` | Update link fields after creation; constructs full goal URL from GID |
 
 ---
 

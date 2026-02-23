@@ -155,3 +155,71 @@
 
 **Remaining:**
 - Make.com: Update all milestone sync modules with 7th param (`p_strategic_bet_tags`)
+
+## 2026-02-23 (continued) — Client DB Migration
+
+- Planned full IO automation scope across FC1/FC2
+- Dropped and reimported `bsb_client_codes` from Google Sheet CSV (85 records, up from 78)
+- Created and populated `clients` table (49 unique companies, keyed by TLA)
+- Added `tla VARCHAR(20)` column to `clients`
+- Changed `po_required` from BOOLEAN to TEXT (preserves values like "Yes (Coupa)")
+- Cleaned data: stripped `mailto:` prefix from emails, moved code annotations (LMS002, ZEI003) to notes, normalised embedded newlines in addresses
+- Migration scripts saved to `sql/client_migration/` (5 files, run in order)
+
+## 2026-02-23
+
+- Introduced IO Submission automation (Make.com Phase 1) to project context
+- Stored blueprint in `make-blueprints/phase-1-io-submission-project-creation.json`
+- Reviewed blueprint and identified issues: race condition on DB insert, rerun failures on conflict
+- Discovered new tables in production not reflected in local schema: `clients`, `bsb_client_codes`, `insertion_orders`, `checkin_responses`
+- Updated `sql/schema.sql` with all four tables
+- Added `upsert_insertion_order` function to `sql/functions.sql`
+  - Handles Yes/No → boolean for `new_client`
+  - Handles ISO date strings (YYYY-MM-DD) from Gravity Forms via Google Sheets
+  - ON CONFLICT (io_reference) DO NOTHING; returns existing id if record already exists
+- Added `update_insertion_order_links` function to `sql/functions.sql`
+  - Updates asana_link, drive_link, goal_link by io_reference
+  - Constructs full Asana goal URL from raw GID; preserves existing values if param is empty
+
+**IO Submission scenario — Make.com changes needed:**
+1. Replace `InsertIntoTable` (module 34, Branch B) with `Execute Function → upsert_insertion_order`
+   - Move the call into Branch A's main flow, positioned after module 10 (sheet write-back)
+   - This eliminates the race condition (links currently read from sheet before they're written)
+2. Add `Execute Function → update_insertion_order_links` at end of Branch A
+   - Pass `{{9.Asana Link}}` for asana_link
+   - Pass `https://drive.google.com/drive/u/0/folders/{{12.id}}` for drive_link
+   - Pass `{{14.data.data.gid}}` for goal_gid
+3. Fix `additionalContactsJ` variable (carriage return stripping for JSON) — still outstanding
+
+**PENDING VERIFICATION — check on next real IO submission:**
+
+Run this query in Sevalla after the scenario completes:
+```sql
+SELECT
+    io_reference,
+    salesperson_email,
+    submission_date,
+    date_io_signed,
+    new_client,
+    company_name,
+    asana_link,
+    drive_link,
+    goal_link,
+    created_at
+FROM insertion_orders
+ORDER BY created_at DESC
+LIMIT 5;
+```
+
+Confirm:
+- [ ] Record was created (not a conflict-skipped no-op)
+- [ ] `submission_date` and `date_io_signed` are populated, not NULL
+- [ ] `new_client` is `true`/`false`, not NULL
+- [ ] `asana_link`, `drive_link`, `goal_link` are all populated (confirms race condition fix)
+- [ ] Running the scenario a second time on the same row completes without error and creates no duplicate
+
+**IO Submission context:**
+- Source: Gravity Forms on internal website → Google Sheets → Make.com
+- Future: HubSpot as source (long-term, not imminent)
+- Dates stored as text with leading apostrophe in sheet (e.g. `'2025-12-02`); Make.com receives without apostrophe as ISO format
+- `new_client` field comes through as text "Yes"/"No" from the form
