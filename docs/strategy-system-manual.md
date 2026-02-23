@@ -1,7 +1,7 @@
 # BsB Strategy System — User Manual
 
-**Version:** 1.0
-**Date:** 19 February 2026
+**Version:** 1.1
+**Date:** 23 February 2026
 
 ---
 
@@ -248,6 +248,8 @@ You don't need to understand this in detail, but it helps to know what's happeni
 8. **Metabase** reads from PostgreSQL in real time — dashboards always show the latest synced data
 
 **Important:** Asana is the source of truth. If something looks wrong in Metabase, check Asana first. If Asana is correct but Metabase is wrong, the sync may need to be re-run.
+
+**Note on strategic bet tags:** The milestone sync now supports the Strategic Bet multi-select field. Once the Make.com milestone modules are updated with the 7th parameter, bet tags will sync automatically alongside all other milestone data.
 
 ---
 
