@@ -459,3 +459,105 @@ BEGIN
     RETURN v_id;
 END;
 ';
+
+
+-- ============================================
+-- upsert_client
+-- Called by Make.com when New Client = Yes on IO form submission.
+-- Creates or updates a client record (keyed on TLA).
+-- Must be called before upsert_client_code.
+-- Returns clients.id.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION upsert_client(
+    p_tla                   TEXT,
+    p_client_name           TEXT,
+    p_formatted_client_name TEXT DEFAULT NULL
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS '
+DECLARE
+    v_id INTEGER;
+BEGIN
+    INSERT INTO clients (tla, client_name, formatted_client_name)
+    VALUES (
+        UPPER(TRIM(p_tla)),
+        TRIM(p_client_name),
+        NULLIF(TRIM(p_formatted_client_name), '''')
+    )
+    ON CONFLICT (tla) DO UPDATE SET
+        client_name           = EXCLUDED.client_name,
+        formatted_client_name = COALESCE(EXCLUDED.formatted_client_name, clients.formatted_client_name)
+    RETURNING id INTO v_id;
+
+    RETURN v_id;
+END;
+';
+
+
+-- ============================================
+-- upsert_client_code
+-- Called by Make.com immediately after upsert_client when New Client = Yes.
+-- Creates or updates a bsb_client_codes record.
+-- Looks up client_id via TLA — upsert_client must run first.
+-- Returns bsb_client_codes.id.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION upsert_client_code(
+    p_bsb_client_code       TEXT,
+    p_tla                   TEXT,
+    p_primary_contact       TEXT    DEFAULT NULL,
+    p_primary_contact_email TEXT    DEFAULT NULL,
+    p_payment_terms         TEXT    DEFAULT NULL,
+    p_po_required           TEXT    DEFAULT NULL,
+    p_billing_contact       TEXT    DEFAULT NULL,
+    p_billing_email         TEXT    DEFAULT NULL,
+    p_billing_address       TEXT    DEFAULT NULL
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS '
+DECLARE
+    v_client_id INTEGER;
+    v_id        INTEGER;
+BEGIN
+    SELECT id INTO v_client_id
+    FROM clients
+    WHERE tla = UPPER(TRIM(p_tla));
+
+    INSERT INTO bsb_client_codes (
+        bsb_client_code,
+        client_id,
+        primary_contact,
+        primary_contact_email,
+        payment_terms,
+        po_required,
+        client_billing_contact,
+        client_billing_email,
+        client_billing_address
+    ) VALUES (
+        UPPER(TRIM(p_bsb_client_code)),
+        v_client_id,
+        NULLIF(TRIM(p_primary_contact), ''''),
+        NULLIF(TRIM(p_primary_contact_email), ''''),
+        NULLIF(TRIM(p_payment_terms), ''''),
+        NULLIF(TRIM(p_po_required), ''''),
+        NULLIF(TRIM(p_billing_contact), ''''),
+        NULLIF(TRIM(p_billing_email), ''''),
+        NULLIF(TRIM(p_billing_address), '''')
+    )
+    ON CONFLICT (bsb_client_code) DO UPDATE SET
+        client_id              = COALESCE(EXCLUDED.client_id, bsb_client_codes.client_id),
+        primary_contact        = COALESCE(EXCLUDED.primary_contact, bsb_client_codes.primary_contact),
+        primary_contact_email  = COALESCE(EXCLUDED.primary_contact_email, bsb_client_codes.primary_contact_email),
+        payment_terms          = COALESCE(EXCLUDED.payment_terms, bsb_client_codes.payment_terms),
+        po_required            = COALESCE(EXCLUDED.po_required, bsb_client_codes.po_required),
+        client_billing_contact = COALESCE(EXCLUDED.client_billing_contact, bsb_client_codes.client_billing_contact),
+        client_billing_email   = COALESCE(EXCLUDED.client_billing_email, bsb_client_codes.client_billing_email),
+        client_billing_address = COALESCE(EXCLUDED.client_billing_address, bsb_client_codes.client_billing_address)
+    RETURNING id INTO v_id;
+
+    RETURN v_id;
+END;
+';

@@ -292,3 +292,49 @@ Confirm:
 python3 scripts/audit_drive_folders.py --apply
 ```
 Then move to Tier 2 audit with `--tier2` flag.
+
+## 2026-02-24 (continued) — l8h.2 and l8h.4
+
+### l8h.2: New client handling on IO form
+
+**DB changes (`sql/migrate-new-client.sql`):**
+1. `ALTER TABLE clients ADD CONSTRAINT clients_tla_unique UNIQUE (tla)` — required for ON CONFLICT
+2. `upsert_client(p_tla, p_client_name, p_formatted_client_name)` — returns clients.id
+3. `upsert_client_code(p_bsb_client_code, p_tla, p_primary_contact, p_primary_contact_email, p_payment_terms, p_po_required, p_billing_contact, p_billing_email, p_billing_address)` — returns bsb_client_codes.id
+
+**Status:** Functions written, not yet deployed to Sevalla. Deploy using migrate-new-client.sql (3 steps, paste each separately).
+
+**Gravity Form fields to add (conditional on New Client = Yes):**
+| Field | Type | Maps to |
+|-------|------|---------|
+| Company TLA | Text (3 chars, uppercase) | `p_tla` |
+| Full company name | Text | `p_client_name` |
+| Formatted company name | Text (optional) | `p_formatted_client_name` |
+| Client code | Text (e.g. ABC001) | `p_bsb_client_code` |
+| Primary contact name | Text | `p_primary_contact` |
+| Primary contact email | Email | `p_primary_contact_email` |
+| Payment terms | Dropdown | `p_payment_terms` |
+| PO required | Dropdown | `p_po_required` |
+| Billing contact name | Text (optional) | `p_billing_contact` |
+| Billing contact email | Email (optional) | `p_billing_email` |
+| Billing address | Textarea (optional) | `p_billing_address` |
+
+**Make.com changes (to IO submission scenario):**
+Add a Router branch that fires when `new_client = "Yes"`, running BEFORE the Drive folder creation step:
+1. PostgreSQL Execute Function → `upsert_client` (p_tla, p_client_name, p_formatted_client_name)
+2. PostgreSQL Execute Function → `upsert_client_code` (all params above)
+3. Google Sheets → Add a Row to the client directory sheet (to keep dropdown current)
+
+After step 3, the new client is in the DB so `get_client_folder_info(client_code)` will return results and the Drive folder creation proceeds as normal.
+
+### l8h.4: Milestone sync 7th param
+
+**Make.com changes only — no DB work needed.**
+
+In the Asana→PostgreSQL sync scenario, for each of the 5 initiative branches (B1–B5):
+1. Find the milestone API call module — check the custom_fields array in the output to identify the index of the "Strategic Bet" field (open a test run, look at the custom_fields array — it's likely index 0 or 1)
+2. Open the PostgreSQL Execute Function module (upsert_milestone)
+3. Click Refresh on the function list
+4. Add 7th parameter: `p_strategic_bet_tags` → `{{N.custom_fields[X].display_value}}` where N is the Iterator module number and X is the Strategic Bet field index
+
+**Note:** The Strategic Bet field is a multi-select in Asana. `display_value` returns a comma-separated string, which is exactly what `upsert_milestone` expects for the 7th param.
