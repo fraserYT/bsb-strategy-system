@@ -287,11 +287,31 @@ Confirm:
 | `[OSS]` Ossila Ltd | TLA mismatch | Waiting on confirmation — DB has `OOS`, Drive has `OSS`. Colleague checking which is correct |
 | `[ELR]` ELRIG | Not in DB | Waiting on colleague to add details to sheet and DB |
 
-**Next step:** Once renames + confirmations done, re-run:
-```
-python3 scripts/audit_drive_folders.py --apply
-```
-Then move to Tier 2 audit with `--tier2` flag.
+**Outstanding items resolved (2026-02-24 continued):**
+
+| Folder in Drive | Resolution | Action |
+|-----------------|------------|--------|
+| `[BoB]` Boster Bio | Mixed case | **Rename to `[BOB]` in Drive** (user action) |
+| `[DeN]` DeNovix | Mixed case | **Rename to `[DEN]` in Drive** (user action) |
+| `[N6]` N6 Tec | TLA mismatch | **Rename to `[N6T]` in Drive** (user action) |
+| `[OSS]` Ossila Ltd | DB had `OOS` (typo) | Run `sql/fix-ossila-tla.sql` on Sevalla — updates clients, bsb_client_codes, insertion_orders |
+| `[ELR]` ELRIG | Not in DB | Added to sheet — run `scripts/sync_client_sheet.py --apply` to sync to DB |
+
+**Next steps (in order):**
+1. Run `sql/fix-ossila-tla.sql` on Sevalla
+2. Delete `scripts/token.json` (needed to re-auth with new Sheets scope)
+3. Run `python3 scripts/sync_client_sheet.py --apply` (syncs ELRIG + all clients from sheet to DB)
+4. Rename 3 Drive folders (BOB, DEN, N6T) — user action in Drive
+5. Re-run `python3 scripts/audit_drive_folders.py --apply` to catch remaining 5 folders
+6. Then run Tier 2 audit: `python3 scripts/audit_drive_folders.py --tier2 --apply`
+
+**New script: `scripts/sync_client_sheet.py`**
+- Reads client directory sheet, calls `upsert_client` + `upsert_client_code` for every row
+- Safe to re-run (all upserts) — use as the ongoing sheet→DB sync mechanism
+- Requires Sheets scope: delete `token.json` before first run (re-auth adds both Drive + Sheets scopes)
+- Dry-run by default; `--apply` to write
+
+**New task: `claude-wp-l8h.5`** — decide on ongoing sheet/DB sync schedule (manual vs. Make.com vs. cron)
 
 ## 2026-02-24 (continued) — l8h.2 and l8h.4
 

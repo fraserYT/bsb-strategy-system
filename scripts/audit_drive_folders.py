@@ -70,7 +70,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+SCOPES = [
+    'https://www.googleapis.com/auth/drive.readonly',
+    'https://www.googleapis.com/auth/spreadsheets.readonly',
+]
 CLIENT_PROJECTS_FOLDER_ID = '1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht'
 SHARED_DRIVE_ID = '0AB1AZiOLJI_ZUk9PVA'
 TOKEN_FILE = os.path.join(os.path.dirname(__file__), 'token.json')
