@@ -11,6 +11,14 @@
 # Temp files (working copies of Make.com blueprints etc.)
 temp/
 
+# Google OAuth token and secrets (credentials — never commit these)
+scripts/token.json
+scripts/client_secrets.json
+
+# Script outputs and cache
+audit_results.csv
+scripts/__pycache__/
+
 # OS
 .DS_Store
 Thumbs.db

@@ -253,3 +253,42 @@ Confirm:
 
 **New project captured:**
 - Client Reporting Automation (claude-wp-43l) — replace manual multi-platform report collation with automated pipeline → Metabase → PDF. Colleague is primary driver. Blocked on onboarding (d1b).
+
+## 2026-02-24 (continued) — Drive Folder Audit Script
+
+- Created `scripts/audit_drive_folders.py` — Python script to audit Drive folder structure against DB
+- Uses OAuth2 user credentials (manager access to Client Projects folder is sufficient)
+- Scans Tier 1 folders under Client Projects (ID: `1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht`) in Shared Drive (ID: `0AB1AZiOLJI_ZUk9PVA`)
+- Matches `[TLA] Client Name` pattern → updates `clients.drive_folder_id`
+- Optional `--tier2` flag: also scans `[CODE] Contact Name` subfolders → updates `bsb_client_codes.drive_folder_id`
+- Dry-run by default; `--apply` to write to DB; outputs `audit_results.csv` with status per folder
+
+**Setup required before running:**
+1. Get `client_secrets.json` from GCP console (Drive API enabled, Desktop app OAuth2 credentials) → save to `scripts/client_secrets.json`
+2. Set env vars in `scripts/scripts.env`: `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`, `DB_PORT=30067`
+3. First run opens browser for Google auth — token cached in `scripts/token.json` (gitignored)
+
+**Sevalla external connection notes:**
+- Host: `europe-north1-001.proxy.sevalla.app`
+- Port: `30067` (not 5432)
+- SSL: not required (server doesn't support it)
+- DB name: not `bitesize_bio` — check Sevalla dashboard for actual external DB name
+
+**Audit run results (2026-02-24):**
+- 47 Tier 1 folders found in Client Projects
+- 41 folder IDs written to `clients.drive_folder_id` ✅
+- 4 outstanding — need action before re-running with `--apply`:
+
+| Folder in Drive | Issue | Action |
+|-----------------|-------|--------|
+| `[BoB]` Boster Bio | Mixed case TLA | Rename to `[BOB]` in Drive |
+| `[DeN]` DeNovix | Mixed case TLA | Rename to `[DEN]` in Drive |
+| `[N6]` N6 Tec | TLA mismatch | Rename to `[N6T]` in Drive (DB uses N6T) |
+| `[OSS]` Ossila Ltd | TLA mismatch | Waiting on confirmation — DB has `OOS`, Drive has `OSS`. Colleague checking which is correct |
+| `[ELR]` ELRIG | Not in DB | Waiting on colleague to add details to sheet and DB |
+
+**Next step:** Once renames + confirmations done, re-run:
+```
+python3 scripts/audit_drive_folders.py --apply
+```
+Then move to Tier 2 audit with `--tier2` flag.
