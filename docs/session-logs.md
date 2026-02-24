@@ -1,4 +1,4 @@
-# Session Log
+u# Session Log
 
 ## 2026-01-30
 
@@ -297,35 +297,44 @@ Then move to Tier 2 audit with `--tier2` flag.
 
 ### l8h.2: New client handling on IO form
 
-**DB changes (`sql/migrate-new-client.sql`):**
-1. `ALTER TABLE clients ADD CONSTRAINT clients_tla_unique UNIQUE (tla)` — required for ON CONFLICT
+**DB changes (`sql/migrate-new-client.sql`) — deployed ✅:**
+1. `ALTER TABLE clients ADD CONSTRAINT clients_tla_unique UNIQUE (tla)`
 2. `upsert_client(p_tla, p_client_name, p_formatted_client_name)` — returns clients.id
 3. `upsert_client_code(p_bsb_client_code, p_tla, p_primary_contact, p_primary_contact_email, p_payment_terms, p_po_required, p_billing_contact, p_billing_email, p_billing_address)` — returns bsb_client_codes.id
 
-**Status:** Functions written, not yet deployed to Sevalla. Deploy using migrate-new-client.sql (3 steps, paste each separately).
+**Gravity Form — contact field pre-population (GPPA, no WordPress code needed):**
+The client directory sheet (`1hSSJCG-QR6R6XIyB-CrxryDhA3_XqBt-SqhG9Oqy96E`) has `Primary contact`, `Primary Contact Email`, and all billing columns — exactly matching what GPPA already uses for Company Name fields.
 
-**Gravity Form fields to add (conditional on New Client = Yes):**
+Changes to the form:
+1. Change field 10 (Primary Client Contact) from **Name type → Text type** (the sheet has a single full-name column, not first/last)
+2. Add GPPA to field 10: pull `Primary contact`, filter `BsB Client Code` = field 6
+3. Add GPPA to field 11: pull `Primary Contact Email`, filter `BsB Client Code` = field 6
+4. Both fields remain editable and required — salesperson can override if contact has changed
+5. For new clients (field 7 checked): GPPA returns nothing (no sheet row yet), fields are blank — salesperson fills in
+
+Note: The bio theme uses domain-based site selection logic (`bio_domain_specific()` in `functions.php`). The staff site (`bsbstaff.com`) has no brand include file yet — any future WordPress code for this site goes in the `bsbstaff` case or a new `inc/brands/bsbstaff.php`. Not needed for this task.
+
+**Gravity Form — new client fields to add (conditional on New Client = Yes):**
 | Field | Type | Maps to |
 |-------|------|---------|
-| Company TLA | Text (3 chars, uppercase) | `p_tla` |
+| Company TLA | Text (uppercase) | `p_tla` |
 | Full company name | Text | `p_client_name` |
 | Formatted company name | Text (optional) | `p_formatted_client_name` |
 | Client code | Text (e.g. ABC001) | `p_bsb_client_code` |
-| Primary contact name | Text | `p_primary_contact` |
-| Primary contact email | Email | `p_primary_contact_email` |
 | Payment terms | Dropdown | `p_payment_terms` |
 | PO required | Dropdown | `p_po_required` |
 | Billing contact name | Text (optional) | `p_billing_contact` |
 | Billing contact email | Email (optional) | `p_billing_email` |
 | Billing address | Textarea (optional) | `p_billing_address` |
 
-**Make.com changes (to IO submission scenario):**
-Add a Router branch that fires when `new_client = "Yes"`, running BEFORE the Drive folder creation step:
-1. PostgreSQL Execute Function → `upsert_client` (p_tla, p_client_name, p_formatted_client_name)
-2. PostgreSQL Execute Function → `upsert_client_code` (all params above)
-3. Google Sheets → Add a Row to the client directory sheet (to keep dropdown current)
+Note: Primary contact name (field 10) and email (field 11) are already on the form — no duplicate fields needed. Make.com uses them for both the IO record and `upsert_client_code`.
 
-After step 3, the new client is in the DB so `get_client_folder_info(client_code)` will return results and the Drive folder creation proceeds as normal.
+**Make.com changes (to IO submission scenario):**
+1. Update field 10 reference from `{Primary Client Contact (First):10.3}` + `{Primary Client Contact (Last):10.6}` → `{Primary Client Contact:10}` (now a single text field)
+2. Add a branch that fires when `new_client = "Yes"`, running BEFORE Drive folder creation:
+   - PostgreSQL Execute Function → `upsert_client`
+   - PostgreSQL Execute Function → `upsert_client_code` (uses field 10 for `p_primary_contact`, field 11 for `p_primary_contact_email`)
+   - Google Sheets → Add a Row to client directory sheet (keeps dropdown and GPPA current for future submissions)
 
 ### l8h.4: Milestone sync 7th param
 
