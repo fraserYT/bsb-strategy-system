@@ -223,3 +223,33 @@ Confirm:
 - Future: HubSpot as source (long-term, not imminent)
 - Dates stored as text with leading apostrophe in sheet (e.g. `'2025-12-02`); Make.com receives without apostrophe as ISO format
 - `new_client` field comes through as text "Yes"/"No" from the form
+
+## 2026-02-24
+
+- Reviewed current Make.com blueprint (`temp/current_scenario.json`) — confirmed v6d.1 and v6d.2 already implemented:
+  - Race condition fixed: `upsert_insertion_order` (module 52) now runs inline in Branch A after sheet write-back (module 10), Branch B removed
+  - `update_insertion_order_links` (module 54) follows immediately with correct link params
+  - Old `InsertIntoTable` module 34 removed
+- Closed beads tasks v6d.1 and v6d.2
+- Reorganised beads: closed kre, downgraded ffo/pj7/a8y/6p3 to P3/on-hold, bumped v6d and new FC1 tasks to P1
+- Added new beads epics: IO Automation FC1 Workplan (l8h), Client Reporting Automation (43l)
+- Added colleague onboarding task (d1b), 84e deferred to tomorrow, 43l blocked until d1b complete
+
+**Drive folder structure — DB schema deployed to Sevalla:**
+- Added `drive_folder_id TEXT` to `clients` (Tier 1 folder ID cache)
+- Added `drive_folder_id TEXT` to `bsb_client_codes` (Tier 2 folder ID cache)
+- Created `client_product_folders` table (Tiers 3+4: product type + year folder IDs)
+- Deployed 4 new functions (all tested and verified):
+  - `get_client_folder_info(client_code)` — returns TLA, names, Tier 1+2 folder IDs
+  - `update_client_folder_ids(client_code, tier1_id, tier2_id)` — stores folder IDs after creation
+  - `get_product_folder_info(client_code, product_type, year)` — returns Tier 3+4 folder IDs
+  - `upsert_product_folder(client_code, product_type, year, tier3_id, tier4_id)` — stores Tier 3+4 IDs
+- Note: Sevalla SQL studio runs entire editor content as one batch — functions must be pasted alone using single-quoted bodies (not dollar-quoting)
+- Root "Client Projects" Drive folder ID: `1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht`
+
+**Remaining for l8h.1 (Drive folder structure):**
+1. Folder audit — scan Client Projects, match to DB by TLA/code, populate folder IDs, output non-conforming folders to Google Sheet
+2. Make.com flow update — replace current flat folder creation with 4-tier find-or-create logic using the new DB functions
+
+**New project captured:**
+- Client Reporting Automation (claude-wp-43l) — replace manual multi-platform report collation with automated pipeline → Metabase → PDF. Colleague is primary driver. Blocked on onboarding (d1b).

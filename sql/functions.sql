@@ -1,6 +1,12 @@
 -- BsB Strategy Planning System
 -- Database Functions
--- Last updated: 2026-02-23
+-- Last updated: 2026-02-24
+--
+-- Note on dollar-quoting: Sevalla SQL studio requires each function to be
+-- pasted and run alone. New functions use single-quoted bodies to avoid
+-- dollar-quoting issues entirely. Existing functions (upsert_project,
+-- upsert_milestone) use $$ and are already deployed; re-deploy with $fn$
+-- if Sevalla re-deployment is ever needed.
 
 -- ============================================
 -- upsert_project
@@ -26,7 +32,6 @@ DECLARE
     v_start_cycle TEXT;
     v_end_cycle TEXT;
 BEGIN
-    -- Map Asana status values to database constraint values
     v_mapped_status := CASE p_status
         WHEN 'on_track' THEN 'on_track'
         WHEN 'at_risk' THEN 'at_risk'
@@ -36,11 +41,9 @@ BEGIN
         ELSE 'not_started'
     END;
 
-    -- Strip "2026 " prefix from focus cycle values (Asana stores "2026 FC1", DB stores "FC1")
     v_start_cycle := REPLACE(p_start_cycle, '2026 ', '');
     v_end_cycle := REPLACE(p_end_cycle, '2026 ', '');
 
-    -- Upsert user first (only if owner exists)
     IF p_owner_asana_id IS NOT NULL AND p_owner_asana_id != '' THEN
         INSERT INTO users (asana_user_id, first_name, last_name)
         VALUES (
@@ -55,7 +58,6 @@ BEGIN
         RETURNING id INTO v_user_id;
     END IF;
 
-    -- Upsert project
     INSERT INTO projects (
         asana_project_id, code, name, strategic_bet_id, owning_department_id,
         project_lead, project_lead_id, status, start_cycle_id, end_cycle_id, project_type
@@ -110,13 +112,10 @@ DECLARE
     v_status TEXT;
     v_tag TEXT;
 BEGIN
-    -- Look up the parent project by its Asana ID
     SELECT id INTO v_project_id FROM projects WHERE asana_project_id = p_project_asana_id;
 
-    -- Map completed boolean to status
     v_status := CASE WHEN p_completed THEN 'complete' ELSE 'upcoming' END;
 
-    -- Upsert milestone and capture ID
     INSERT INTO milestones (
         asana_milestone_id, code, project_id, name, target_date, status, focus_cycle_id
     )
@@ -137,12 +136,9 @@ BEGIN
         updated_at = NOW()
     RETURNING id INTO v_milestone_id;
 
-    -- Sync strategic bet tags (if provided)
     IF p_strategic_bet_tags IS NOT NULL AND p_strategic_bet_tags != '' THEN
-        -- Clear existing tags for this milestone
         DELETE FROM milestone_bet_tags WHERE milestone_id = v_milestone_id;
 
-        -- Insert each tag (comma-separated from Asana multi-select)
         FOREACH v_tag IN ARRAY string_to_array(p_strategic_bet_tags, ',')
         LOOP
             INSERT INTO milestone_bet_tags (milestone_id, strategic_bet_tag_id)
@@ -161,7 +157,7 @@ $$ LANGUAGE plpgsql;
 -- Called by Make.com when a new IO submission is detected in Google Sheets
 -- Inserts a new record; silently skips if io_reference already exists (DO NOTHING)
 -- Returns the id of the inserted or existing record
--- Dates expected in DD/MM/YYYY format (UK Google Sheets locale)
+-- Dates expected as ISO format YYYY-MM-DD (leading apostrophe stripped by Make.com)
 -- new_client expected as "Yes"/"No" text from the sheet
 -- ============================================
 
@@ -190,9 +186,6 @@ DECLARE
     v_submission_date   TIMESTAMPTZ;
     v_date_io_signed    TIMESTAMPTZ;
 BEGIN
-    -- Parse submission_date (ISO format YYYY-MM-DD from Google Sheets via Gravity Forms)
-    -- The sheet stores dates with a leading apostrophe (e.g. '2025-12-02) to force text format;
-    -- Make.com receives the value without the apostrophe.
     BEGIN
         v_submission_date := CASE
             WHEN NULLIF(TRIM(p_submission_date), '') IS NULL THEN NULL
@@ -202,7 +195,6 @@ BEGIN
         v_submission_date := NULL;
     END;
 
-    -- Parse date_io_signed
     BEGIN
         v_date_io_signed := CASE
             WHEN NULLIF(TRIM(p_date_io_signed), '') IS NULL THEN NULL
@@ -213,24 +205,11 @@ BEGIN
     END;
 
     INSERT INTO insertion_orders (
-        io_reference,
-        salesperson_first_name,
-        salesperson_last_name,
-        salesperson_email,
-        submission_date,
-        date_io_signed,
-        bsb_client_code,
-        new_client,
-        other_company,
-        primary_contact_name,
-        primary_contact_email,
-        additional_contacts,
-        salesperson_notes,
-        product_type,
-        signed_io_pdf_url,
-        io_submission_permalink,
-        company_name,
-        formatted_company_name
+        io_reference, salesperson_first_name, salesperson_last_name,
+        salesperson_email, submission_date, date_io_signed, bsb_client_code,
+        new_client, other_company, primary_contact_name, primary_contact_email,
+        additional_contacts, salesperson_notes, product_type, signed_io_pdf_url,
+        io_submission_permalink, company_name, formatted_company_name
     ) VALUES (
         p_io_reference,
         NULLIF(TRIM(p_salesperson_first_name), ''),
@@ -258,7 +237,6 @@ BEGIN
     ON CONFLICT (io_reference) DO NOTHING
     RETURNING id INTO v_id;
 
-    -- DO NOTHING means RETURNING yields NULL if record already existed — fetch existing id
     IF v_id IS NULL THEN
         SELECT id INTO v_id FROM insertion_orders WHERE io_reference = p_io_reference;
     END IF;
@@ -270,10 +248,10 @@ $fn$ LANGUAGE plpgsql;
 
 -- ============================================
 -- update_insertion_order_links
--- Called by Make.com after the Asana task, Asana goal, and Drive folder have been created
+-- Called by Make.com after Asana task, Asana goal, and Drive folder are created
 -- Updates the three link fields on an existing insertion_orders record
--- Only overwrites a field if a non-empty value is provided (preserves existing if not)
--- goal_link is stored as a full URL; pass the raw GID from the Asana API response
+-- Only overwrites a field if a non-empty value is provided
+-- goal_link stored as full URL; pass raw GID from Asana API response
 -- ============================================
 
 CREATE OR REPLACE FUNCTION update_insertion_order_links(
@@ -299,3 +277,185 @@ BEGIN
     RETURN v_rows > 0;
 END;
 $fn$ LANGUAGE plpgsql;
+
+
+-- ============================================
+-- get_client_folder_info
+-- Called by Make.com at the start of the Drive folder creation flow.
+-- Returns TLA, client name, contact name, and cached Tier 1+2 folder IDs.
+-- Null folder IDs = folders don't exist yet and need creating in Drive.
+-- Root "Client Projects" folder ID: 1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht
+-- ============================================
+
+CREATE OR REPLACE FUNCTION get_client_folder_info(p_client_code TEXT)
+RETURNS TABLE (
+    tla                 TEXT,
+    client_name         TEXT,
+    primary_contact     TEXT,
+    tier1_folder_id     TEXT,
+    tier2_folder_id     TEXT
+)
+LANGUAGE plpgsql
+AS '
+BEGIN
+    RETURN QUERY
+    SELECT
+        c.tla::TEXT,
+        c.client_name::TEXT,
+        cc.primary_contact::TEXT,
+        c.drive_folder_id::TEXT,
+        cc.drive_folder_id::TEXT
+    FROM bsb_client_codes cc
+    JOIN clients c ON cc.client_id = c.id
+    WHERE cc.bsb_client_code = TRIM(p_client_code);
+END;
+';
+
+
+-- ============================================
+-- update_client_folder_ids
+-- Called by Make.com after creating Tier 1 and/or Tier 2 Drive folders.
+-- Pass null/empty for a tier to leave it unchanged.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION update_client_folder_ids(
+    p_client_code       TEXT,
+    p_tier1_folder_id   TEXT DEFAULT NULL,
+    p_tier2_folder_id   TEXT DEFAULT NULL
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS '
+DECLARE
+    v_client_id INTEGER;
+BEGIN
+    SELECT c.id INTO v_client_id
+    FROM bsb_client_codes cc
+    JOIN clients c ON cc.client_id = c.id
+    WHERE cc.bsb_client_code = TRIM(p_client_code);
+
+    IF v_client_id IS NULL THEN
+        RETURN FALSE;
+    END IF;
+
+    IF NULLIF(TRIM(p_tier1_folder_id), '''') IS NOT NULL THEN
+        UPDATE clients
+        SET drive_folder_id = TRIM(p_tier1_folder_id)
+        WHERE id = v_client_id;
+    END IF;
+
+    IF NULLIF(TRIM(p_tier2_folder_id), '''') IS NOT NULL THEN
+        UPDATE bsb_client_codes
+        SET drive_folder_id = TRIM(p_tier2_folder_id)
+        WHERE bsb_client_code = TRIM(p_client_code);
+    END IF;
+
+    RETURN TRUE;
+END;
+';
+
+
+-- ============================================
+-- get_product_folder_info
+-- Called by Make.com to look up Tier 3 (product type) and Tier 4 (year) folder IDs.
+-- Tier 3: checks exact year first, falls back to any year for same product type.
+-- Tier 4: exact match only. Null = needs creating.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION get_product_folder_info(
+    p_client_code   TEXT,
+    p_product_type  TEXT,
+    p_year          INTEGER
+)
+RETURNS TABLE (
+    product_type_folder_id  TEXT,
+    year_folder_id          TEXT
+)
+LANGUAGE plpgsql
+AS '
+DECLARE
+    v_client_code_id        INTEGER;
+    v_product_type_folder   TEXT;
+    v_year_folder           TEXT;
+BEGIN
+    SELECT cc.id INTO v_client_code_id
+    FROM bsb_client_codes cc
+    WHERE cc.bsb_client_code = TRIM(p_client_code);
+
+    SELECT cpf.product_type_folder_id INTO v_product_type_folder
+    FROM client_product_folders cpf
+    WHERE cpf.client_code_id = v_client_code_id
+      AND cpf.product_type = TRIM(p_product_type)
+      AND cpf.year = p_year
+    LIMIT 1;
+
+    IF v_product_type_folder IS NULL THEN
+        SELECT cpf.product_type_folder_id INTO v_product_type_folder
+        FROM client_product_folders cpf
+        WHERE cpf.client_code_id = v_client_code_id
+          AND cpf.product_type = TRIM(p_product_type)
+          AND cpf.product_type_folder_id IS NOT NULL
+        LIMIT 1;
+    END IF;
+
+    SELECT cpf.year_folder_id INTO v_year_folder
+    FROM client_product_folders cpf
+    WHERE cpf.client_code_id = v_client_code_id
+      AND cpf.product_type = TRIM(p_product_type)
+      AND cpf.year = p_year
+    LIMIT 1;
+
+    RETURN QUERY SELECT v_product_type_folder, v_year_folder;
+END;
+';
+
+
+-- ============================================
+-- upsert_product_folder
+-- Called by Make.com after creating Tier 3 and/or Tier 4 Drive folders.
+-- Inserts new row or updates existing for client + product type + year.
+-- Returns client_product_folders row id.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION upsert_product_folder(
+    p_client_code               TEXT,
+    p_product_type              TEXT,
+    p_year                      INTEGER,
+    p_product_type_folder_id    TEXT,
+    p_year_folder_id            TEXT
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS '
+DECLARE
+    v_client_code_id    INTEGER;
+    v_id                INTEGER;
+BEGIN
+    SELECT cc.id INTO v_client_code_id
+    FROM bsb_client_codes cc
+    WHERE cc.bsb_client_code = TRIM(p_client_code);
+
+    IF v_client_code_id IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    INSERT INTO client_product_folders (
+        client_code_id, product_type, product_type_folder_id, year, year_folder_id
+    ) VALUES (
+        v_client_code_id,
+        TRIM(p_product_type),
+        NULLIF(TRIM(p_product_type_folder_id), ''''),
+        p_year,
+        TRIM(p_year_folder_id)
+    )
+    ON CONFLICT (client_code_id, product_type, year) DO UPDATE SET
+        product_type_folder_id = COALESCE(
+            NULLIF(TRIM(p_product_type_folder_id), ''''),
+            client_product_folders.product_type_folder_id
+        ),
+        year_folder_id = TRIM(p_year_folder_id)
+    RETURNING id INTO v_id;
+
+    RETURN v_id;
+END;
+';

@@ -8,6 +8,9 @@
 .env
 *.env
 
+# Temp files (working copies of Make.com blueprints etc.)
+temp/
+
 # OS
 .DS_Store
 Thumbs.db

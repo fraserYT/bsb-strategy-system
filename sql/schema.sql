@@ -1,6 +1,6 @@
 -- BsB Strategy Planning System
 -- Database Schema
--- Last updated: 2026-02-23
+-- Last updated: 2026-02-24
 
 -- ============================================
 -- TABLES
@@ -147,6 +147,7 @@ CREATE TABLE clients (
     client_name             VARCHAR(255) NOT NULL,
     formatted_client_name   VARCHAR(255),
     tla                     VARCHAR(20),
+    drive_folder_id         TEXT,           -- Tier 1: "[TLA] Client Name" folder in Client Projects
     created_at              TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -165,7 +166,23 @@ CREATE TABLE bsb_client_codes (
     client_billing_email        VARCHAR(255),
     client_billing_address      TEXT,
     notes                       TEXT,
+    drive_folder_id             TEXT,       -- Tier 2: "[CODE] Contact Name" folder inside Tier 1
     created_at                  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Drive folder ID cache for Tiers 3+4 of the client folder hierarchy
+-- Tier 3: "[CODE] Product Type" folder (e.g. "[LMS001] Live Events")
+-- Tier 4: "YYYY" year folder inside Tier 3 (year derived from IO signed date)
+-- One row per unique client code + product type + year combination
+CREATE TABLE client_product_folders (
+    id                      SERIAL PRIMARY KEY,
+    client_code_id          INTEGER NOT NULL REFERENCES bsb_client_codes(id),
+    product_type            TEXT NOT NULL,
+    product_type_folder_id  TEXT,           -- Tier 3 folder ID (shared across years)
+    year                    INTEGER NOT NULL,
+    year_folder_id          TEXT NOT NULL,  -- Tier 4 folder ID (specific to year)
+    created_at              TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (client_code_id, product_type, year)
 );
 
 -- Insertion Orders — populated by Make.com on new IO form submission
@@ -219,6 +236,7 @@ CREATE INDEX idx_milestones_cycle ON milestones(focus_cycle_id);
 CREATE INDEX idx_users_asana_id ON users(asana_user_id);
 CREATE INDEX idx_milestone_bet_tags_milestone ON milestone_bet_tags(milestone_id);
 CREATE INDEX idx_milestone_bet_tags_tag ON milestone_bet_tags(strategic_bet_tag_id);
+CREATE INDEX idx_client_product_folders_code ON client_product_folders(client_code_id);
 
 -- ============================================
 -- VIEWS

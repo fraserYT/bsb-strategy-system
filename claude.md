@@ -60,8 +60,9 @@ Building an automated planning and execution system for annual strategy delivery
 | `strategy_milestones` | High-level outcomes per initiative |
 | `proposals` | Intake pipeline items |
 | `progress_snapshots` | Point-in-time progress records |
-| `clients` | Master client list |
-| `bsb_client_codes` | One or more client codes per client, with billing/contact details |
+| `clients` | Master client list (includes `drive_folder_id` for Tier 1 Drive folder) |
+| `bsb_client_codes` | One or more client codes per client, with billing/contact details (includes `drive_folder_id` for Tier 2) |
+| `client_product_folders` | Drive folder ID cache for Tiers 3+4 (product type + year), one row per unique combination |
 | `insertion_orders` | IO records, populated by Make.com on form submission |
 | `checkin_responses` | Anonymous daily mood/busyness ratings (see `checkin-schema.sql`) |
 
@@ -349,10 +350,10 @@ Flow:
 3. **Branch B** — DB insert *(currently parallel, race condition — see Known Issues)*
 
 **Known Issues / Pending Make.com Changes:**
-1. **Race condition:** Branch B reads link columns from original watch output (before Branch A writes them). Fix: move DB insert into Branch A after module 10, use actual module outputs for links
-2. **Rerun safety:** Replace `InsertIntoTable` with `Execute Function → upsert_insertion_order` (handles ON CONFLICT)
-3. **Add links update step:** Add `Execute Function → update_insertion_order_links` at end of Branch A passing `{{9.Asana Link}}`, `https://drive.google.com/drive/u/0/folders/{{12.id}}`, `{{14.data.data.gid}}`
-4. **`additionalContactsJ` variable:** Carriage return stripping for JSON encoding not working — outstanding
+1. ~~Race condition~~ — **Fixed** (module 52 `upsert_insertion_order` now runs inline in Branch A after module 10; Branch B removed)
+2. ~~Rerun safety~~ — **Fixed** (InsertIntoTable replaced with `upsert_insertion_order`)
+3. ~~Add links update step~~ — **Fixed** (module 54 `update_insertion_order_links` added at end of Branch A)
+4. **`additionalContactsJ` variable:** Carriage return stripping for JSON encoding not working — outstanding (beads: claude-wp-v6d.3)
 
 **Product Type routing (inner router, per deliverable):**
 - `Live Event` → sub-routes: Leica/MF = placeholder; non-Leica BsB = duplicate Asana project from template + generate pre-filled registration form URL
@@ -365,6 +366,15 @@ Flow:
 |----------|---------|
 | `upsert_insertion_order(...)` | Insert new IO record; ON CONFLICT DO NOTHING; returns id |
 | `update_insertion_order_links(io_ref, asana, drive, goal_gid)` | Update link fields after creation; constructs full goal URL from GID |
+
+### Drive Folder Functions
+
+| Function | Purpose |
+|----------|---------|
+| `get_client_folder_info(client_code)` | Returns TLA, client name, contact name, Tier 1+2 Drive folder IDs |
+| `update_client_folder_ids(client_code, tier1_id, tier2_id)` | Stores Tier 1+2 folder IDs after Drive folder creation |
+| `get_product_folder_info(client_code, product_type, year)` | Returns Tier 3+4 folder IDs; Tier 3 falls back to any year if exact not found |
+| `upsert_product_folder(client_code, product_type, year, tier3_id, tier4_id)` | Inserts/updates client_product_folders after Drive folder creation |
 
 ---
 
