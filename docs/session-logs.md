@@ -376,6 +376,9 @@ In the Asana→PostgreSQL sync scenario, for each of the 5 initiative branches (
 
 Two small formatting issues identified in the Asana creation process. Tracked as beads tasks, to be resolved this week.
 
+**`claude-wp-ohj` — Fix primary contact email missing from Asana creation (Make.com) [P1]**
+Primary contact email is not appearing in Asana on IO submission. Investigate field mapping in Make.com scenario — likely dropped between Gravity Form / Google Sheet and the Asana creation module. Confirmed missing on most recent submission.
+
 **`claude-wp-2p2` — Fix goal name missing spaces (Make.com)**
 Goal names in the Asana creation step are concatenated without spaces between components.
 - Current: `3772167385472026-02-18Sarah FarrowCYT001`
