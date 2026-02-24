@@ -371,3 +371,16 @@ In the Asana→PostgreSQL sync scenario, for each of the 5 initiative branches (
 4. Add 7th parameter: `p_strategic_bet_tags` → `{{N.custom_fields[X].display_value}}` where N is the Iterator module number and X is the Strategic Bet field index
 
 **Note:** The Strategic Bet field is a multi-select in Asana. `display_value` returns a comma-separated string, which is exactly what `upsert_milestone` expects for the 7th param.
+
+## 2026-02-24 (continued) — Make.com Cosmetic Fixes (this week)
+
+Two small formatting issues identified in the Asana creation process. Tracked as beads tasks, to be resolved this week.
+
+**`claude-wp-2p2` — Fix goal name missing spaces (Make.com)**
+Goal names in the Asana creation step are concatenated without spaces between components.
+- Current: `3772167385472026-02-18Sarah FarrowCYT001`
+- Fix: add spaces/separators between IO reference, date, contact name, and client code
+- Fix is in the Make.com scenario (string construction for goal name)
+
+**`claude-wp-5zo` — Replace pipes with spaces in additional contacts field (Make.com)**
+Additional contacts currently arrive as `firstname|lastname|email@address.com` — pipes need replacing with spaces before the value is passed to Asana.
