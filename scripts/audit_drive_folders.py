@@ -79,8 +79,8 @@ SHARED_DRIVE_ID = '0AB1AZiOLJI_ZUk9PVA'
 TOKEN_FILE = os.path.join(os.path.dirname(__file__), 'token.json')
 SECRETS_FILE = os.path.join(os.path.dirname(__file__), 'client_secrets.json')
 
-# Tier 1: [TLA] Client Name  (TLA = 2–5 uppercase letters)
-TIER1_RE = re.compile(r'^\[([A-Z]{2,5})\]\s+(.+)$')
+# Tier 1: [TLA] Client Name  (TLA = 2–5 chars, starts with a letter, may contain digits e.g. N6T)
+TIER1_RE = re.compile(r'^\[([A-Z][A-Z0-9]{1,4})\]\s+(.+)$')
 
 # Tier 2: [CODE] Contact Name  (CODE = letters + digits, e.g. ABC001, ZEI003)
 TIER2_RE = re.compile(r'^\[([A-Z]{2,5}\d{3,4})\]\s+(.+)$')
