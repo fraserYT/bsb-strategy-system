@@ -297,13 +297,17 @@ Confirm:
 | `[OSS]` Ossila Ltd | DB had `OOS` (typo) | Run `sql/fix-ossila-tla.sql` on Sevalla — updates clients, bsb_client_codes, insertion_orders |
 | `[ELR]` ELRIG | Not in DB | Added to sheet — run `scripts/sync_client_sheet.py --apply` to sync to DB |
 
-**Next steps (in order):**
-1. Run `sql/fix-ossila-tla.sql` on Sevalla
-2. Delete `scripts/token.json` (needed to re-auth with new Sheets scope)
-3. Run `python3 scripts/sync_client_sheet.py --apply` (syncs ELRIG + all clients from sheet to DB)
-4. Rename 3 Drive folders (BOB, DEN, N6T) — user action in Drive
-5. Re-run `python3 scripts/audit_drive_folders.py --apply` to catch remaining 5 folders
-6. Then run Tier 2 audit: `python3 scripts/audit_drive_folders.py --tier2 --apply`
+**Completed (2026-02-24):**
+1. `sql/fix-ossila-tla.sql` run on Sevalla ✅
+2. `sync_client_sheet.py --apply` — 50 clients, 84 codes synced (incl. ELRIG, OSS, BOB, DEN, N6T) ✅
+3. Drive renames done (BOB, DEN, N6T) ✅
+4. Tier 1 audit complete — 46 folder IDs in DB ✅
+5. Tier 2 audit complete — 78 folder IDs in DB ✅
+
+**Outstanding (for colleague):** See `docs/drive-audit-tier2-report.md`
+- `[N6T] Jenny Alfrey` → rename to `[N6T001] Jenny Alfrey` in Drive, then re-run `--tier2 --apply`
+- ZEI Podcast folder — decision needed
+- 8 misc/archive folders — confirm OK to leave as-is
 
 **New script: `scripts/sync_client_sheet.py`**
 - Reads client directory sheet, calls `upsert_client` + `upsert_client_code` for every row
