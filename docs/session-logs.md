@@ -30,7 +30,25 @@ Designed the full Make.com module plan for 4-tier Drive folder creation. Key dec
 
 **Root `Client Projects` folder ID:** `1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht`
 
-**Next:** Write SQL for `io_products` table + `upsert_io_product` function, then build Make.com modules.
+**Next:** Deploy blueprint to live scenario (stopping point — carry over to next session).
+
+### io_products Table + Blueprint Build
+
+- Deployed `io_products` table and `upsert_io_product` function to Sevalla (via `sql/migrate-io-products.sql`)
+  - Note: FK on `io_reference` dropped — use `VARCHAR(255)` loose ref to match existing pattern
+- Built `scripts/build_blueprint.py` — programmatic blueprint editor, applies all Drive folder changes
+- Blueprint updated (commit `ee21923`, `[2026-02-25 15:41]`):
+  - Removed module 12 (old flat Drive folder creation)
+  - Removed module 23 (old subfolder per deliverable)
+  - Added modules 57–68 inside deliverable iteration (see module plan in session notes above)
+  - Removed Drive link write-back from module 10 (col S) — Drive links now in `io_products` table
+- Blueprint imported to **clone scenario** — all modules present and correct ✅
+- **Not yet deployed to live** — carry over to next session
+
+### Other decisions / notes
+- `users` table already exists (name + asana_user_id, 2 people). TODO: fully populate and link to `insertion_orders.salesperson_*` fields via asana_user_id
+- Make.com version history: 60 days. Always log import time here to identify rollback version
+- `scripts/build_blueprint.py` should be re-run (not manually edited) whenever blueprint changes are needed programmatically
 
 ---
 
