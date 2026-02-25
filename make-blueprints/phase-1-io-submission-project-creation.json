@@ -37,7 +37,7 @@
                 "connection": "google"
               },
               "label": "My Google connection (fraser@bitesizebio.com)"
-c            },
+            },
             "includesHeaders": {
               "label": "Yes"
             },
