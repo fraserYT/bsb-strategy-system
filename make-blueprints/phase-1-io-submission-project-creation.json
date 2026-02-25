@@ -1017,7 +1017,7 @@
         "rowSeparator": "\n"
       },
       "mapper": {
-        "value": "- {{40.`0`}} | {{40.`1`}}"
+        "value": "- {{40.`0`}}"
       },
       "metadata": {
         "designer": {
