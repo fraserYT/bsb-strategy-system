@@ -1163,7 +1163,7 @@
       },
       "mapper": {
         "data": {
-          "name": "{{2.`4`}} {{2.`3`}} {{2.`0`}} {{2.`5`}} {{2.`16`}}",
+          "name": "{{2.`4`}}, {{2.`3`}}, {{2.`0`}}, {{2.`5`}}, {{2.`16`}}",
           "notes": "Client: {{2.`15`}}\nSalesperson Name: {{2.`0`}}\nDate IO Signed: {{2.`3`}}\nBsB Client Code: {{2.`5`}}\nIO Number: {{2.`4`}}\nMain Client Contact: {{2.`8`}} | {{2.`9`}}\nAdditional Contacts:\n{{27.additionalContacts}}\nNotes: {{2.`11`}}\n\nDELIVERABLES\n{{41.text}}",
           "owner": "1173809660626097",
           "workspace": "10928367000451",
