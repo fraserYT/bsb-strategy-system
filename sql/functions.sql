@@ -561,3 +561,44 @@ BEGIN
     RETURN v_id;
 END;
 ';
+
+-- ============================================
+-- upsert_io_product
+-- Called by Make.com inside the deliverable iteration loop
+-- Inserts or updates one io_products row per product per IO
+-- unique_id (EVENT-{IO Ref}-{UUID}) is the conflict key
+-- asana_project_id left null until per-product Asana creation is built
+-- ============================================
+
+CREATE OR REPLACE FUNCTION upsert_io_product(
+    p_io_reference      TEXT,
+    p_product_type      TEXT,
+    p_product_name      TEXT DEFAULT NULL,
+    p_unique_id         TEXT DEFAULT NULL,
+    p_drive_folder_id   TEXT DEFAULT NULL
+) RETURNS INTEGER AS $fn$
+DECLARE
+    v_id INTEGER;
+BEGIN
+    INSERT INTO io_products (
+        io_reference,
+        product_type,
+        product_name,
+        unique_id,
+        drive_folder_id
+    )
+    VALUES (
+        p_io_reference,
+        p_product_type,
+        NULLIF(TRIM(COALESCE(p_product_name, '')), ''),
+        p_unique_id,
+        p_drive_folder_id
+    )
+    ON CONFLICT (unique_id) DO UPDATE SET
+        drive_folder_id  = COALESCE(EXCLUDED.drive_folder_id, io_products.drive_folder_id),
+        product_name     = COALESCE(NULLIF(TRIM(EXCLUDED.product_name), ''), io_products.product_name)
+    RETURNING id INTO v_id;
+
+    RETURN v_id;
+END;
+$fn$ LANGUAGE plpgsql;
