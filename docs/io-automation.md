@@ -82,13 +82,11 @@ A separate "Products" sheet lists the individual deliverables for each IO, match
 
 The following are known issues being worked on:
 
-1. **Race condition on the database insert** — The database insert currently runs in parallel with the project creation flow. This means it may run before the Asana and Drive links have been created, so those fields can end up blank in the database. The fix is to move the database insert to run after the links are written, so it captures the actual values.
+1. **Drive folder link in the database** — The `io_products` table now captures the Drive folder ID for each product. The Asana project link remains nullable until per-product Asana project creation is built out.
 
-2. **Links not updated in the database** — A follow-up step to update the database record with the final Asana and Drive links is designed but not yet wired in.
+2. **Additional contacts formatting** — A bug with carriage return characters in the additional contacts field is causing issues with JSON encoding. This is outstanding.
 
-3. **Additional contacts formatting** — A bug with carriage return characters in the additional contacts field is causing issues with JSON encoding. This is outstanding.
-
-4. **Milestone sync parameter** — A pending update across all milestone sync modules to add a new tagging parameter. The database function is already deployed; the Make.com configuration just needs updating.
+3. **Milestone sync parameter** — A pending update across all milestone sync modules to add a new tagging parameter. The database function is already deployed; the Make.com configuration just needs updating.
 
 ---
 
