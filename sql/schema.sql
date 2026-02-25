@@ -219,7 +219,7 @@ CREATE TABLE insertion_orders (
 -- asana_project_id is nullable; populated when per-product Asana creation is built
 CREATE TABLE io_products (
     id                  SERIAL PRIMARY KEY,
-    io_reference        TEXT NOT NULL REFERENCES insertion_orders(io_reference),
+    io_reference        VARCHAR(255) NOT NULL,  -- loose ref to insertion_orders; no FK to avoid type mismatch
     product_type        TEXT NOT NULL,
     product_name        TEXT,
     unique_id           TEXT UNIQUE NOT NULL,
