@@ -1,4 +1,38 @@
-u# Session Log
+# Session Log
+
+## 2026-02-25
+
+### Make.com Blueprint Fixes (ohj, 2p2, 5zo)
+
+All three fixes confirmed applied and imported to live scenario:
+- **ohj** — Added Main Client Contact (Email) GID `1203473983906377` to Asana task creation module, mapped to `{{2.\`9\`}}`
+- **2p2** — Goal name now comma-space separated: `{{2.\`4\`}}, {{2.\`3\`}}, {{2.\`0\`}}, {{2.\`5\`}}, {{2.\`16\`}}`
+- **5zo** — additionalContacts replaces `|` with space (was `/`); goal notes now use `{{27.additionalContacts}}` not raw `{{2.\`10\`}}`
+- **Goal notes deliverables** — rowSeparator set to `\n`, removed trailing `\\n` from template
+- **Deliverables line** — stripped to product type only (`- {{40.\`0\`}}`); product name removed pending Asana project link
+
+Blueprint committed with fixed filename (`make-blueprints/phase-1-io-submission-project-creation.json`). Previously broken by stray `c` character at line 40 which caused all imports to silently fail.
+
+**Make.com version history note:** Make.com version history goes back 60 days. Log import times here to identify the correct rollback version. Git commit hash is the fallback: `git checkout <hash> -- make-blueprints/phase-1-io-submission-project-creation.json` then re-import.
+
+### Drive Folder Structure + io_products — Planning
+
+Designed the full Make.com module plan for 4-tier Drive folder creation. Key decisions:
+
+- All tiers use **find-or-create** (DB → Drive search → create)
+- Year = IO signed date year (can be renamed in Drive; ID tracked in DB)
+- Each product gets a **complete path** through all tiers (two Live Events on one IO = two separate IO folders)
+- IO folder name: `[ClientCode] [IO Ref] [Date] [ProductType] ([UUID])` — UUID prevents collisions for same product type on same IO
+- **Tier 3 folder names** (plural): Live Events, Multi-Session Live Events, eBlasts, Podcasts, Newsletter Banners, Website Banners, Articles, Ebooks, Masterclasses
+- Product type terminology corrected: "webinar" → "Live Event"; BsB/MF distinction implied by client TLA, not product type name
+- Drive link write-back: per-product links written to Products sheet col E (unique_id) — no link in IO Forms sheet
+- **`io_products` table** added to schema — long-term single source of truth for IO + product data, with Metabase view planned for FC2
+
+**Root `Client Projects` folder ID:** `1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht`
+
+**Next:** Write SQL for `io_products` table + `upsert_io_product` function, then build Make.com modules.
+
+---
 
 ## 2026-01-30
 

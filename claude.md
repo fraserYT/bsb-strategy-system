@@ -64,6 +64,7 @@ Building an automated planning and execution system for annual strategy delivery
 | `bsb_client_codes` | One or more client codes per client, with billing/contact details (includes `drive_folder_id` for Tier 2) |
 | `client_product_folders` | Drive folder ID cache for Tiers 3+4 (product type + year), one row per unique combination |
 | `insertion_orders` | IO records, populated by Make.com on form submission |
+| `io_products` | One record per product per IO — product type, unique_id, drive_folder_id, asana_project_id (nullable) |
 | `checkin_responses` | Anonymous daily mood/busyness ratings (see `checkin-schema.sql`) |
 
 ### Key Relationships
@@ -375,6 +376,7 @@ Flow:
 | `update_client_folder_ids(client_code, tier1_id, tier2_id)` | Stores Tier 1+2 folder IDs after Drive folder creation |
 | `get_product_folder_info(client_code, product_type, year)` | Returns Tier 3+4 folder IDs; Tier 3 falls back to any year if exact not found |
 | `upsert_product_folder(client_code, product_type, year, tier3_id, tier4_id)` | Inserts/updates client_product_folders after Drive folder creation |
+| `upsert_io_product(io_reference, product_type, product_name, unique_id, drive_folder_id)` | Inserts/updates io_products row; asana_project_id left null until Asana project creation is built |
 
 ---
 

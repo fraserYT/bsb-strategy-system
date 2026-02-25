@@ -94,36 +94,37 @@ The following are known issues being worked on:
 
 ## Drive Folder Structure
 
-The Drive folder structure is being updated from a flat layout to a four-tier hierarchy that mirrors the client and contact structure.
+The Drive folder structure uses a four-tier hierarchy that mirrors the client and contact structure.
 
-### New Structure
+### Structure
 
 ```
 Bitesize Bio Shared Drive/
-└── Projects/
-    └── Client Projects/
-        └── [ZYM] Zymo Research/                              <- Company folder
-            └── [ZYM001] Karen Kao/                           <- Contact folder
-                └── [ZYM001] eBlasts/                         <- Category folder
-                    └── 2026/                                  <- Year folder
-                        └── [ZYM001] [IO Ref] Date Project/   <- IO folder
+└── Client Projects/                                          <- Root constant in Make.com
+    └── [ZYM] Zymo Research/                                 <- Tier 1: Company folder
+        └── [ZYM001] Karen Kao/                              <- Tier 2: Contact folder
+            └── [ZYM001] eBlasts/                            <- Tier 3: Product type folder
+                └── 2026/                                    <- Tier 4: Year folder
+                    └── [ZYM001] IO-467110289596 2026-02-23 eBlast (a1b2c3)/  <- IO folder
 ```
 
 **How each tier works:**
 
-- **Company folder** — named with the 3-letter company acronym (TLA) and the full company name, e.g. `[ZYM] Zymo Research`. Created once per company; subsequent IOs for the same company reuse the existing folder.
-- **Contact folder** — named with the client code and contact name, e.g. `[ZYM001] Karen Kao`. One per billing contact.
-- **Category folder** — groups IOs by product category (e.g. eBlasts, Webinars). For eBlasts and Webinars, the year is the year of the event, not the IO date.
-- **IO folder** — the specific folder for this IO, named with the client code, IO reference, date, and project name.
+- **Tier 1 — Company folder** — `[TLA] Company Name`, e.g. `[ZYM] Zymo Research`. One per company; reused across all IOs for that company.
+- **Tier 2 — Contact folder** — `[ClientCode] Contact Name`, e.g. `[ZYM001] Karen Kao`. One per billing contact.
+- **Tier 3 — Product type folder** — `[ClientCode] eBlasts` / `[ClientCode] Live Events` etc. See product type → folder name mapping in the Product Type Routing section.
+- **Tier 4 — Year folder** — year from IO signed date (e.g. `2026`). Folders can be renamed in Drive without breaking automation — IDs are tracked in the database.
+- **IO folder** — `[ClientCode] [IO Ref] [Date] [ProductType] ([UUID])` — always created fresh, unique per product per IO. UUID is included to prevent name collisions when an IO contains multiple products of the same type.
 
-Folder creation is split by the **New Client** flag on the form:
+**Each product on an IO gets its own complete path through all tiers.** An IO with a Live Event and an eBlast creates two separate IO folders, one under Live Events and one under eBlasts.
 
-- **New client** — create all tiers top-down, none exist yet
-- **Existing client** — Tier 1 and Tier 2 already exist; search for them to get their folder IDs, then proceed downward
-- **Tier 3 (category) and Year folder** — always find-or-create, even for returning clients (they may not have had this product type or year before)
-- **Tier 4 (IO folder)** — always create, it is unique per IO
+**All tiers use find-or-create logic:**
+1. Check the database for a stored folder ID
+2. If not found, search Drive by name under the parent folder
+3. If still not found, create the folder
+4. Store the ID in the database for future runs
 
-This avoids the need for full find-or-create logic at every tier and keeps the Make.com flow straightforward. The root folder ID for `Client Projects` in the Shared Drive is stored as a constant in Make.com.
+The root `Client Projects` folder ID (`1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht`) is stored as a constant in Make.com. Tier 1+2 folder IDs are cached in `clients.drive_folder_id` and `bsb_client_codes.drive_folder_id`. Tier 3+4 folder IDs are cached in `client_product_folders`.
 
 ---
 
@@ -131,19 +132,19 @@ This avoids the need for full find-or-create logic at every tier and keeps the M
 
 Each deliverable on an IO is routed based on its product type. The table below shows which types are currently handled and which are planned:
 
-| Product Type | Status | Notes |
-|---|---|---|
-| Live Event (BsB) | Live | Asana project duplicated from template; pre-filled registration URL generated |
-| Live Event (MF/Leica) | Placeholder | Route exists but not yet built |
-| Multi-Session Live Event | Not built | Separate branch planned |
-| eBlast | Not built | Placeholder in place |
-| Podcast | Not built | Will use Transistor platform |
-| Newsletter Banner | Not built | Planned |
-| Website Banner | Not built | Planned |
-| Article | Not built | Planned |
-| Ebook | Not built | Planned |
-| Masterclass | Not built | Planned |
-| MF Webinar | Not built | Planned |
+The BsB/MF distinction is implied by the client and not included in the product type value. The Make.com router identifies MF/Leica IOs by client TLA.
+
+| Product Type | Drive Folder Name | Status | Notes |
+|---|---|---|---|
+| Live Event | Live Events | Live (BsB) / Placeholder (MF) | BsB: Asana project from template + pre-filled registration URL. MF: route exists, not yet built |
+| Multi-Session Live Event | Multi-Session Live Events | Not built | Separate branch planned |
+| eBlast | eBlasts | Placeholder | Route exists, not yet built |
+| Podcast | Podcasts | Not built | Will use Transistor platform |
+| Newsletter Banner | Newsletter Banners | Not built | Planned |
+| Website Banner | Website Banners | Not built | Planned |
+| Article | Articles | Not built | Planned |
+| Ebook | Ebooks | Not built | Planned |
+| Masterclass | Masterclasses | Not built | Planned |
 
 ---
 
@@ -171,11 +172,13 @@ The automation writes to and reads from a PostgreSQL database hosted on Sevalla.
 
 | Table | What it stores |
 |---|---|
-| `insertion_orders` | One record per IO submission — salesperson details, client info, product type, submission date, and links to Asana and Drive |
-| `clients` | Master list of companies — name, formatted name, and 3-letter acronym (TLA) |
-| `bsb_client_codes` | One record per billing contact — links to the client, stores contact details, billing info, payment terms, and PO requirements |
+| `insertion_orders` | One record per IO submission — salesperson details, client info, submission date, and links to Asana and Drive |
+| `io_products` | One record per product per IO — product type, Drive folder ID, Asana project ID (nullable until built), unique ID |
+| `clients` | Master list of companies — name, formatted name, 3-letter acronym (TLA), and Tier 1 Drive folder ID |
+| `bsb_client_codes` | One record per billing contact — links to the client, stores contact details, billing info, payment terms, PO requirements, and Tier 2 Drive folder ID |
+| `client_product_folders` | Tier 3+4 Drive folder ID cache — one row per unique client code + product type + year combination |
 
-The database is the reporting layer. Metabase dashboards can query it to show things like IO volume over time, which clients have the most active projects, and which product types are most common. It is not a replacement for Asana — Asana remains the source of truth for project management.
+The database is the single source of truth for IO data. A Metabase view joining `insertion_orders` + `io_products` + `clients` + `bsb_client_codes` provides a complete picture of every IO, every product, and every link. The Google Sheet is input-only. Asana remains the source of truth for project management.
 
 ---
 
@@ -183,17 +186,19 @@ The database is the reporting layer. Metabase dashboards can query it to show th
 
 ### FC1 (Now to 5 April 2026)
 
-1. Client DB reimport — complete
-2. Drive folder structure update — 4-tier, find-or-create logic
-3. New client fields on the Gravity Form and Make.com handling
-4. Phase 2: TwentyThree webinar creation for Live Events
-5. Milestone sync parameter update (quick Make.com config change)
+1. Client DB reimport — complete ✅
+2. Drive folder audit (Tier 1+2 folder IDs into DB) — complete ✅
+3. Drive folder structure update — 4-tier find-or-create in Make.com + `io_products` table
+4. New client fields on the Gravity Form and Make.com handling — designed ✅, Make.com build pending
+5. Phase 2: TwentyThree Live Event creation for Live Events
+6. Milestone sync 7th parameter update (quick Make.com config change)
 
 ### FC2 (13 April to 24 May 2026)
 
-6. MF Live Event branch build-out
-7. New product type branches — all remaining types in the table above
-8. Reverse sync — name changes made in Asana or TwentyThree propagate back to the database
+7. MF Live Event branch build-out
+8. New product type branches — all remaining types in the table above
+9. Reverse sync — name changes made in Asana or TwentyThree propagate back to the database
+10. Metabase IO dashboard — view joining insertion_orders + io_products + clients + bsb_client_codes
 
 ---
 
