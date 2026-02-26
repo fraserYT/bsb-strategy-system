@@ -602,3 +602,182 @@ BEGIN
     RETURN v_id;
 END;
 $fn$ LANGUAGE plpgsql;
+
+
+-- ============================================
+-- generate_weekly_slack_report
+-- Returns a fully-formatted Slack mrkdwn message for the weekly strategy report.
+-- Covers the active focus cycle only.
+-- Intended to be called by a Make.com scheduled scenario every Friday afternoon.
+-- Team pulse uses a 5-day average (CURRENT_DATE - 4 days) so a Friday run
+-- captures Mon–Fri data for the full working week.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION generate_weekly_slack_report()
+RETURNS TEXT AS $fn$
+DECLARE
+    v_cycle_id            INTEGER;
+    v_cycle_code          TEXT;
+    v_cycle_name          TEXT;
+    v_start_date          DATE;
+    v_end_date            DATE;
+    v_days_elapsed        INTEGER;
+    v_total_days          INTEGER;
+    v_days_remaining      INTEGER;
+    v_pct_elapsed         INTEGER;
+    v_progress_bar        TEXT;
+    v_on_track            INTEGER;
+    v_at_risk             INTEGER;
+    v_blocked             INTEGER;
+    v_complete            INTEGER;
+    v_needs_attention     TEXT;
+    v_due_this_week       TEXT;
+    v_initiative_progress TEXT;
+    v_project_progress    TEXT;
+    v_overall_pct         INTEGER;
+    v_avg_mood            NUMERIC;
+    v_avg_busyness        NUMERIC;
+    v_result              TEXT;
+BEGIN
+
+    -- Active cycle
+    SELECT id, code, name, start_date, end_date
+    INTO v_cycle_id, v_cycle_code, v_cycle_name, v_start_date, v_end_date
+    FROM focus_cycles WHERE status = 'active' LIMIT 1;
+
+    IF v_cycle_id IS NULL THEN
+        RETURN 'No active focus cycle found.';
+    END IF;
+
+    v_days_elapsed   := CURRENT_DATE - v_start_date;
+    v_total_days     := v_end_date - v_start_date;
+    v_days_remaining := v_end_date - CURRENT_DATE;
+    v_pct_elapsed    := ROUND(100.0 * v_days_elapsed / v_total_days);
+    v_progress_bar   := repeat('█', LEAST(10, (v_pct_elapsed / 10)::int)) ||
+                        repeat('░', GREATEST(0, 10 - (v_pct_elapsed / 10)::int));
+
+    -- Cycle health counts (projects active this cycle)
+    SELECT
+        COUNT(CASE WHEN p.status = 'on_track' THEN 1 END),
+        COUNT(CASE WHEN p.status = 'at_risk'  THEN 1 END),
+        COUNT(CASE WHEN p.status = 'blocked'  THEN 1 END),
+        COUNT(CASE WHEN p.status = 'complete' THEN 1 END)
+    INTO v_on_track, v_at_risk, v_blocked, v_complete
+    FROM projects p
+    WHERE p.start_cycle_id <= v_cycle_id
+      AND (p.end_cycle_id >= v_cycle_id OR p.end_cycle_id IS NULL)
+      AND p.status NOT IN ('cancelled', 'on_hold');
+
+    -- Needs attention
+    SELECT COALESCE(string_agg(
+        '• ' || p.name || '  [' || p.status || ']' ||
+        CASE WHEN p.project_lead IS NOT NULL THEN '  — ' || p.project_lead ELSE '' END,
+        chr(10) ORDER BY p.status, p.name
+    ), '_None_ 🎉')
+    INTO v_needs_attention
+    FROM projects p
+    WHERE p.status IN ('at_risk', 'blocked')
+      AND p.start_cycle_id <= v_cycle_id
+      AND (p.end_cycle_id >= v_cycle_id OR p.end_cycle_id IS NULL);
+
+    -- Milestones due in the next 7 days
+    SELECT COALESCE(string_agg(
+        '• ' || m.name || '  (' || p.name || ')  — ' || TO_CHAR(m.target_date, 'DD Mon'),
+        chr(10) ORDER BY m.target_date
+    ), '_Nothing due this week_')
+    INTO v_due_this_week
+    FROM milestones m
+    JOIN projects p ON m.project_id = p.id
+    WHERE m.target_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
+      AND m.status NOT IN ('complete', 'cancelled');
+
+    -- Milestone progress by initiative (milestones ending this cycle)
+    SELECT COALESCE(string_agg(
+        '*' || t.code || '*  ✅ ' || t.complete_count || '  ⬜ ' || t.incomplete_count,
+        chr(10) ORDER BY t.code
+    ), '_No milestone data this cycle_')
+    INTO v_initiative_progress
+    FROM (
+        SELECT
+            sb.code,
+            COUNT(CASE WHEN m.status = 'complete' THEN 1 END)                       AS complete_count,
+            COUNT(CASE WHEN m.status NOT IN ('complete', 'cancelled') THEN 1 END)   AS incomplete_count
+        FROM milestones m
+        JOIN projects p ON m.project_id = p.id
+        JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
+        WHERE m.end_cycle_id = v_cycle_id
+        GROUP BY sb.code
+        HAVING COUNT(CASE WHEN m.status != 'cancelled' THEN 1 END) > 0
+    ) t;
+
+    -- Project progress (projects active this cycle)
+    SELECT COALESCE(string_agg(
+        repeat('█', LEAST(10, (COALESCE(p.percent_complete, 0) / 10)::int)) ||
+        repeat('░', GREATEST(0, 10 - (COALESCE(p.percent_complete, 0) / 10)::int)) ||
+        ' ' || COALESCE(p.percent_complete, 0) || '%  ' || p.name || '  ' ||
+        CASE
+            WHEN p.status = 'complete' THEN '✅'
+            WHEN p.status = 'on_track' THEN '🟢'
+            WHEN p.status = 'at_risk'  THEN '🟡'
+            WHEN p.status = 'blocked'  THEN '🔴'
+            ELSE '⚪'
+        END,
+        chr(10) ORDER BY p.percent_complete DESC NULLS LAST
+    ), '_No projects this cycle_')
+    INTO v_project_progress
+    FROM projects p
+    WHERE p.start_cycle_id <= v_cycle_id
+      AND (p.end_cycle_id >= v_cycle_id OR p.end_cycle_id IS NULL)
+      AND p.status NOT IN ('cancelled', 'on_hold');
+
+    -- Overall completion %
+    SELECT ROUND(AVG(COALESCE(p.percent_complete, 0)))
+    INTO v_overall_pct
+    FROM projects p
+    WHERE p.start_cycle_id <= v_cycle_id
+      AND (p.end_cycle_id >= v_cycle_id OR p.end_cycle_id IS NULL)
+      AND p.status NOT IN ('cancelled', 'on_hold');
+
+    -- Team pulse: 5-day average (Mon–Fri when run on Friday)
+    SELECT
+        ROUND(AVG(mood_rating), 1),
+        ROUND(AVG(busyness_rating), 1)
+    INTO v_avg_mood, v_avg_busyness
+    FROM checkin_responses
+    WHERE response_date >= CURRENT_DATE - INTERVAL '4 days';
+
+    -- Assemble message
+    v_result :=
+        '📊 *BsB Strategy — ' || v_cycle_code || ' Weekly Report*' || chr(10) ||
+        '_' || TO_CHAR(CURRENT_DATE, 'DD Mon YYYY') || '_' || chr(10) ||
+        chr(10) ||
+        '*⏱ Cycle Progress*' || chr(10) ||
+        v_cycle_name || ' · ' || v_days_remaining || ' days remaining' || chr(10) ||
+        v_progress_bar || ' ' || v_pct_elapsed || '% elapsed' || chr(10) ||
+        chr(10) ||
+        '*🚦 Cycle Health*' || chr(10) ||
+        v_on_track || ' on track  ·  ' || v_at_risk || ' at risk  ·  ' ||
+        v_blocked || ' blocked  ·  ' || v_complete || ' complete' || chr(10) ||
+        chr(10) ||
+        '*⚠️ Needs Attention*' || chr(10) ||
+        v_needs_attention || chr(10) ||
+        chr(10) ||
+        '*📅 Due This Week*' || chr(10) ||
+        v_due_this_week || chr(10) ||
+        chr(10) ||
+        '*🎯 Milestone Progress by Initiative*' || chr(10) ||
+        v_initiative_progress || chr(10) ||
+        chr(10) ||
+        '*📁 Projects This Cycle*' || chr(10) ||
+        v_project_progress || chr(10) ||
+        chr(10) ||
+        '*Overall Completion: ' || COALESCE(v_overall_pct::TEXT, '—') || '%*' || chr(10) ||
+        chr(10) ||
+        '*😊 Team Pulse* _(5-day avg)_' || chr(10) ||
+        'Mood: ' || COALESCE(v_avg_mood::TEXT, '—') || ' / 10  ·  Busyness: ' ||
+        COALESCE(v_avg_busyness::TEXT, '—') || ' / 10';
+
+    RETURN v_result;
+
+END;
+$fn$ LANGUAGE plpgsql;
