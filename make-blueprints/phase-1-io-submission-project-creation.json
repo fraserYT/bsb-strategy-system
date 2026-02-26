@@ -1164,7 +1164,7 @@
       "mapper": {
         "data": {
           "name": "{{2.`4`}}, {{2.`3`}}, {{2.`0`}}, {{2.`5`}}, {{2.`16`}}",
-          "notes": "Client: {{2.`15`}}\nSalesperson Name: {{2.`0`}}\nDate IO Signed: {{2.`3`}}\nBsB Client Code: {{2.`5`}}\nIO Number: {{2.`4`}}\nMain Client Contact: {{2.`8`}} | {{2.`9`}}\nAdditional Contacts:\n{{27.additionalContacts}}\nNotes: {{2.`11`}}\n\nDELIVERABLES\n{{41.text}}\n\nFull IO details: https://bionic-dashboard-aevhj.kinsta.app/dashboard/3-io-overview?io_reference={{2.`4`}}\n\nFull IO details: https://bionic-dashboard-aevhj.kinsta.app/dashboard/3-io-overview?io_reference={{2.`4`}}",
+          "notes": "Client: {{2.`15`}}\nSalesperson Name: {{2.`0`}}\nDate IO Signed: {{2.`3`}}\nBsB Client Code: {{2.`5`}}\nIO Number: {{2.`4`}}\nMain Client Contact: {{2.`8`}} | {{2.`9`}}\nAdditional Contacts:\n{{27.additionalContacts}}\nNotes: {{2.`11`}}\n\nDELIVERABLES\n{{41.text}}\n\nFull IO details: https://bionic-dashboard-aevhj.kinsta.app/dashboard/3-io-overview?io_reference={{2.`4`}}",
           "owner": "1173809660626097",
           "workspace": "10928367000451",
           "time_period": "1203118537322465"
@@ -5878,580 +5878,796 @@
       }
     },
     {
-      "id": 60,
-      "module": "google-drive:createAFolder",
-      "version": 4,
-      "parameters": {
-        "__IMTCONN__": 9173518
-      },
-      "mapper": {
-        "name": "[{{58.tla}}] {{58.client_name}}",
-        "folderId": "1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht",
-        "destination": "team",
-        "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
-        "useDomainAdminAccess": false
-      },
+      "id": 69,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": null,
       "metadata": {
         "designer": {
           "x": 5700,
-          "y": 300,
-          "name": "Create Tier 1 (company) folder"
-        },
-        "restore": {
-          "expect": {
-            "folderId": {
-              "mode": "edit",
-              "path": []
-            },
-            "destination": {
-              "label": "Google Shared Drive"
-            },
-            "sharedDrive": {
-              "mode": "chose",
-              "label": "Bitesize Bio Shared Drive"
-            },
-            "useDomainAdminAccess": {
-              "label": "No"
-            }
-          },
-          "parameters": {
-            "__IMTCONN__": {
-              "data": {
-                "scoped": "true",
-                "connection": "google-restricted"
-              },
-              "label": "My Google Restricted connection (fraser@bitesizebio.com)"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "__IMTCONN__",
-            "type": "account:google-restricted",
-            "label": "Connection",
-            "required": true
-          }
-        ],
-        "expect": [
-          {
-            "name": "destination",
-            "type": "select",
-            "label": "New Drive Location",
-            "required": true,
-            "validate": {
-              "enum": [
-                "drive",
-                "share",
-                "team"
-              ]
-            }
-          },
-          {
-            "name": "useDomainAdminAccess",
-            "type": "select",
-            "label": "Use Domain Admin Access",
-            "required": true,
-            "validate": {
-              "enum": [
-                true,
-                false
-              ]
-            }
-          },
-          {
-            "name": "name",
-            "type": "text",
-            "label": "New Folder's Name"
-          },
-          {
-            "name": "sharedDrive",
-            "type": "select",
-            "label": "Shared Drive",
-            "required": true
-          },
-          {
-            "name": "folderId",
-            "type": "folder",
-            "label": "New Folder Location"
-          }
-        ]
+          "y": 0
+        }
       },
-      "filter": {
-        "name": "Only if Tier 1 folder missing",
-        "conditions": [
-          [
+      "routes": [
+        {
+          "flow": [
             {
-              "a": "{{58.tier1_folder_id}}",
-              "b": "",
-              "o": "text:empty"
+              "id": 60,
+              "module": "google-drive:createAFolder",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 9173518
+              },
+              "mapper": {
+                "name": "[{{58.tla}}] {{58.client_name}}",
+                "folderId": "1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht",
+                "destination": "team",
+                "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
+                "useDomainAdminAccess": false
+              },
+              "metadata": {
+                "designer": {
+                  "x": 5700,
+                  "y": 300,
+                  "name": "Create Tier 1 (company) folder"
+                },
+                "restore": {
+                  "expect": {
+                    "folderId": {
+                      "mode": "edit",
+                      "path": []
+                    },
+                    "destination": {
+                      "label": "Google Shared Drive"
+                    },
+                    "sharedDrive": {
+                      "mode": "chose",
+                      "label": "Bitesize Bio Shared Drive"
+                    },
+                    "useDomainAdminAccess": {
+                      "label": "No"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google-restricted"
+                      },
+                      "label": "My Google Restricted connection (fraser@bitesizebio.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-restricted",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "destination",
+                    "type": "select",
+                    "label": "New Drive Location",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share",
+                        "team"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "useDomainAdminAccess",
+                    "type": "select",
+                    "label": "Use Domain Admin Access",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "type": "text",
+                    "label": "New Folder's Name"
+                  },
+                  {
+                    "name": "sharedDrive",
+                    "type": "select",
+                    "label": "Shared Drive",
+                    "required": true
+                  },
+                  {
+                    "name": "folderId",
+                    "type": "folder",
+                    "label": "New Folder Location"
+                  }
+                ]
+              },
+              "filter": {
+                "name": "Only if Tier 1 folder missing",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{58.tier1_folder_id}}",
+                      "b": "",
+                      "o": "text:empty"
+                    }
+                  ]
+                ]
+              }
             }
           ]
-        ]
-      }
+        },
+        {
+          "flow": [
+            {
+              "id": 90,
+              "module": "placeholder:Placeholder",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": {
+                "designer": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-      "id": 61,
-      "module": "google-drive:createAFolder",
-      "version": 4,
-      "parameters": {
-        "__IMTCONN__": 9173518
-      },
-      "mapper": {
-        "name": "[{{2.`5`}}] {{58.primary_contact}}",
-        "folderId": "{{ifempty(58.tier1_folder_id; 60.id)}}",
-        "destination": "team",
-        "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
-        "useDomainAdminAccess": false
-      },
+      "id": 70,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": null,
       "metadata": {
         "designer": {
           "x": 6000,
-          "y": 300,
-          "name": "Create Tier 2 (contact) folder"
-        },
-        "restore": {
-          "expect": {
-            "folderId": {
-              "mode": "edit",
-              "path": []
-            },
-            "destination": {
-              "label": "Google Shared Drive"
-            },
-            "sharedDrive": {
-              "mode": "chose",
-              "label": "Bitesize Bio Shared Drive"
-            },
-            "useDomainAdminAccess": {
-              "label": "No"
-            }
-          },
-          "parameters": {
-            "__IMTCONN__": {
-              "data": {
-                "scoped": "true",
-                "connection": "google-restricted"
-              },
-              "label": "My Google Restricted connection (fraser@bitesizebio.com)"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "__IMTCONN__",
-            "type": "account:google-restricted",
-            "label": "Connection",
-            "required": true
-          }
-        ],
-        "expect": [
-          {
-            "name": "destination",
-            "type": "select",
-            "label": "New Drive Location",
-            "required": true,
-            "validate": {
-              "enum": [
-                "drive",
-                "share",
-                "team"
-              ]
-            }
-          },
-          {
-            "name": "useDomainAdminAccess",
-            "type": "select",
-            "label": "Use Domain Admin Access",
-            "required": true,
-            "validate": {
-              "enum": [
-                true,
-                false
-              ]
-            }
-          },
-          {
-            "name": "name",
-            "type": "text",
-            "label": "New Folder's Name"
-          },
-          {
-            "name": "sharedDrive",
-            "type": "select",
-            "label": "Shared Drive",
-            "required": true
-          },
-          {
-            "name": "folderId",
-            "type": "folder",
-            "label": "New Folder Location"
-          }
-        ]
+          "y": 0
+        }
       },
-      "filter": {
-        "name": "Only if Tier 2 folder missing",
-        "conditions": [
-          [
+      "routes": [
+        {
+          "flow": [
             {
-              "a": "{{58.tier2_folder_id}}",
-              "b": "",
-              "o": "text:empty"
+              "id": 61,
+              "module": "google-drive:createAFolder",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 9173518
+              },
+              "mapper": {
+                "name": "[{{2.`5`}}] {{58.primary_contact}}",
+                "folderId": "{{ifempty(58.tier1_folder_id; 60.id)}}",
+                "destination": "team",
+                "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
+                "useDomainAdminAccess": false
+              },
+              "metadata": {
+                "designer": {
+                  "x": 6000,
+                  "y": 300,
+                  "name": "Create Tier 2 (contact) folder"
+                },
+                "restore": {
+                  "expect": {
+                    "folderId": {
+                      "mode": "edit",
+                      "path": []
+                    },
+                    "destination": {
+                      "label": "Google Shared Drive"
+                    },
+                    "sharedDrive": {
+                      "mode": "chose",
+                      "label": "Bitesize Bio Shared Drive"
+                    },
+                    "useDomainAdminAccess": {
+                      "label": "No"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google-restricted"
+                      },
+                      "label": "My Google Restricted connection (fraser@bitesizebio.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-restricted",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "destination",
+                    "type": "select",
+                    "label": "New Drive Location",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share",
+                        "team"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "useDomainAdminAccess",
+                    "type": "select",
+                    "label": "Use Domain Admin Access",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "type": "text",
+                    "label": "New Folder's Name"
+                  },
+                  {
+                    "name": "sharedDrive",
+                    "type": "select",
+                    "label": "Shared Drive",
+                    "required": true
+                  },
+                  {
+                    "name": "folderId",
+                    "type": "folder",
+                    "label": "New Folder Location"
+                  }
+                ]
+              },
+              "filter": {
+                "name": "Only if Tier 2 folder missing",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{58.tier2_folder_id}}",
+                      "b": "",
+                      "o": "text:empty"
+                    }
+                  ]
+                ]
+              }
             }
           ]
-        ]
-      }
+        },
+        {
+          "flow": [
+            {
+              "id": 91,
+              "module": "placeholder:Placeholder",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": {
+                "designer": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-      "id": 62,
-      "module": "postgres:StoredProcedure",
-      "version": 2,
-      "parameters": {
-        "ignore": false,
-        "spname": "\"public\".\"update_client_folder_ids\"",
-        "account": 13330461,
-        "isToManageDataInSharedTransaction": true
-      },
-      "mapper": {
-        "@01:text": "{{2.`5`}}",
-        "@02:text": "{{ifempty(58.tier1_folder_id; 60.id)}}",
-        "@03:text": "{{ifempty(58.tier2_folder_id; 61.id)}}"
-      },
+      "id": 71,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": null,
       "metadata": {
         "designer": {
           "x": 6300,
-          "y": 300,
-          "name": "Store Tier 1+2 folder IDs"
-        },
-        "restore": {
-          "parameters": {
-            "spname": {
-              "label": "public.update_client_folder_ids"
-            },
-            "account": {
-              "data": {
-                "scoped": "true",
-                "connection": "postgres"
-              },
-              "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
-            }
-          }
-        },
-        "interface": [
-          {
-            "name": "update_client_folder_ids",
-            "type": "boolean",
-            "label": "update_client_folder_ids"
-          }
-        ]
+          "y": 0
+        }
       },
-      "filter": {
-        "name": "Only if Tier 1 or Tier 2 was missing",
-        "conditions": [
-          [
+      "routes": [
+        {
+          "flow": [
             {
-              "a": "{{58.tier1_folder_id}}",
-              "b": "",
-              "o": "text:empty"
-            }
-          ],
-          [
-            {
-              "a": "{{58.tier2_folder_id}}",
-              "b": "",
-              "o": "text:empty"
+              "id": 62,
+              "module": "postgres:StoredProcedure",
+              "version": 2,
+              "parameters": {
+                "ignore": false,
+                "spname": "\"public\".\"update_client_folder_ids\"",
+                "account": 13330461,
+                "isToManageDataInSharedTransaction": true
+              },
+              "mapper": {
+                "@01:text": "{{2.`5`}}",
+                "@02:text": "{{ifempty(58.tier1_folder_id; 60.id)}}",
+                "@03:text": "{{ifempty(58.tier2_folder_id; 61.id)}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 6300,
+                  "y": 300,
+                  "name": "Store Tier 1+2 folder IDs"
+                },
+                "restore": {
+                  "parameters": {
+                    "spname": {
+                      "label": "public.update_client_folder_ids"
+                    },
+                    "account": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "postgres"
+                      },
+                      "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
+                    }
+                  }
+                },
+                "interface": [
+                  {
+                    "name": "update_client_folder_ids",
+                    "type": "boolean",
+                    "label": "update_client_folder_ids"
+                  }
+                ]
+              },
+              "filter": {
+                "name": "Only if Tier 1 or Tier 2 was missing",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{58.tier1_folder_id}}",
+                      "b": "",
+                      "o": "text:empty"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{58.tier2_folder_id}}",
+                      "b": "",
+                      "o": "text:empty"
+                    }
+                  ]
+                ]
+              }
             }
           ]
-        ]
-      }
+        },
+        {
+          "flow": [
+            {
+              "id": 92,
+              "module": "placeholder:Placeholder",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": {
+                "designer": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-      "id": 63,
-      "module": "google-drive:createAFolder",
-      "version": 4,
-      "parameters": {
-        "__IMTCONN__": 9173518
-      },
-      "mapper": {
-        "name": "[{{2.`5`}}] {{57.tier3FolderName}}",
-        "folderId": "{{ifempty(58.tier2_folder_id; 61.id)}}",
-        "destination": "team",
-        "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
-        "useDomainAdminAccess": false
-      },
+      "id": 72,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": null,
       "metadata": {
         "designer": {
           "x": 6600,
-          "y": 300,
-          "name": "Create Tier 3 (product type) folder"
-        },
-        "restore": {
-          "expect": {
-            "folderId": {
-              "mode": "edit",
-              "path": []
-            },
-            "destination": {
-              "label": "Google Shared Drive"
-            },
-            "sharedDrive": {
-              "mode": "chose",
-              "label": "Bitesize Bio Shared Drive"
-            },
-            "useDomainAdminAccess": {
-              "label": "No"
-            }
-          },
-          "parameters": {
-            "__IMTCONN__": {
-              "data": {
-                "scoped": "true",
-                "connection": "google-restricted"
-              },
-              "label": "My Google Restricted connection (fraser@bitesizebio.com)"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "__IMTCONN__",
-            "type": "account:google-restricted",
-            "label": "Connection",
-            "required": true
-          }
-        ],
-        "expect": [
-          {
-            "name": "destination",
-            "type": "select",
-            "label": "New Drive Location",
-            "required": true,
-            "validate": {
-              "enum": [
-                "drive",
-                "share",
-                "team"
-              ]
-            }
-          },
-          {
-            "name": "useDomainAdminAccess",
-            "type": "select",
-            "label": "Use Domain Admin Access",
-            "required": true,
-            "validate": {
-              "enum": [
-                true,
-                false
-              ]
-            }
-          },
-          {
-            "name": "name",
-            "type": "text",
-            "label": "New Folder's Name"
-          },
-          {
-            "name": "sharedDrive",
-            "type": "select",
-            "label": "Shared Drive",
-            "required": true
-          },
-          {
-            "name": "folderId",
-            "type": "folder",
-            "label": "New Folder Location"
-          }
-        ]
+          "y": 0
+        }
       },
-      "filter": {
-        "name": "Only if Tier 3 folder missing",
-        "conditions": [
-          [
+      "routes": [
+        {
+          "flow": [
             {
-              "a": "{{59.product_type_folder_id}}",
-              "b": "",
-              "o": "text:empty"
+              "id": 63,
+              "module": "google-drive:createAFolder",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 9173518
+              },
+              "mapper": {
+                "name": "[{{2.`5`}}] {{57.tier3FolderName}}",
+                "folderId": "{{ifempty(58.tier2_folder_id; 61.id)}}",
+                "destination": "team",
+                "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
+                "useDomainAdminAccess": false
+              },
+              "metadata": {
+                "designer": {
+                  "x": 6600,
+                  "y": 300,
+                  "name": "Create Tier 3 (product type) folder"
+                },
+                "restore": {
+                  "expect": {
+                    "folderId": {
+                      "mode": "edit",
+                      "path": []
+                    },
+                    "destination": {
+                      "label": "Google Shared Drive"
+                    },
+                    "sharedDrive": {
+                      "mode": "chose",
+                      "label": "Bitesize Bio Shared Drive"
+                    },
+                    "useDomainAdminAccess": {
+                      "label": "No"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google-restricted"
+                      },
+                      "label": "My Google Restricted connection (fraser@bitesizebio.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-restricted",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "destination",
+                    "type": "select",
+                    "label": "New Drive Location",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share",
+                        "team"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "useDomainAdminAccess",
+                    "type": "select",
+                    "label": "Use Domain Admin Access",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "type": "text",
+                    "label": "New Folder's Name"
+                  },
+                  {
+                    "name": "sharedDrive",
+                    "type": "select",
+                    "label": "Shared Drive",
+                    "required": true
+                  },
+                  {
+                    "name": "folderId",
+                    "type": "folder",
+                    "label": "New Folder Location"
+                  }
+                ]
+              },
+              "filter": {
+                "name": "Only if Tier 3 folder missing",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{59.product_type_folder_id}}",
+                      "b": "",
+                      "o": "text:empty"
+                    }
+                  ]
+                ]
+              }
             }
           ]
-        ]
-      }
+        },
+        {
+          "flow": [
+            {
+              "id": 93,
+              "module": "placeholder:Placeholder",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": {
+                "designer": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-      "id": 64,
-      "module": "google-drive:createAFolder",
-      "version": 4,
-      "parameters": {
-        "__IMTCONN__": 9173518
-      },
-      "mapper": {
-        "name": "{{formatDate(2.`3`; \"YYYY\")}}",
-        "folderId": "{{ifempty(59.product_type_folder_id; 63.id)}}",
-        "destination": "team",
-        "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
-        "useDomainAdminAccess": false
-      },
+      "id": 73,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": null,
       "metadata": {
         "designer": {
           "x": 6900,
-          "y": 300,
-          "name": "Create Tier 4 (year) folder"
-        },
-        "restore": {
-          "expect": {
-            "folderId": {
-              "mode": "edit",
-              "path": []
-            },
-            "destination": {
-              "label": "Google Shared Drive"
-            },
-            "sharedDrive": {
-              "mode": "chose",
-              "label": "Bitesize Bio Shared Drive"
-            },
-            "useDomainAdminAccess": {
-              "label": "No"
-            }
-          },
-          "parameters": {
-            "__IMTCONN__": {
-              "data": {
-                "scoped": "true",
-                "connection": "google-restricted"
-              },
-              "label": "My Google Restricted connection (fraser@bitesizebio.com)"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "__IMTCONN__",
-            "type": "account:google-restricted",
-            "label": "Connection",
-            "required": true
-          }
-        ],
-        "expect": [
-          {
-            "name": "destination",
-            "type": "select",
-            "label": "New Drive Location",
-            "required": true,
-            "validate": {
-              "enum": [
-                "drive",
-                "share",
-                "team"
-              ]
-            }
-          },
-          {
-            "name": "useDomainAdminAccess",
-            "type": "select",
-            "label": "Use Domain Admin Access",
-            "required": true,
-            "validate": {
-              "enum": [
-                true,
-                false
-              ]
-            }
-          },
-          {
-            "name": "name",
-            "type": "text",
-            "label": "New Folder's Name"
-          },
-          {
-            "name": "sharedDrive",
-            "type": "select",
-            "label": "Shared Drive",
-            "required": true
-          },
-          {
-            "name": "folderId",
-            "type": "folder",
-            "label": "New Folder Location"
-          }
-        ]
+          "y": 0
+        }
       },
-      "filter": {
-        "name": "Only if Tier 4 folder missing",
-        "conditions": [
-          [
+      "routes": [
+        {
+          "flow": [
             {
-              "a": "{{59.year_folder_id}}",
-              "b": "",
-              "o": "text:empty"
+              "id": 64,
+              "module": "google-drive:createAFolder",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 9173518
+              },
+              "mapper": {
+                "name": "{{formatDate(2.`3`; \"YYYY\")}}",
+                "folderId": "{{ifempty(59.product_type_folder_id; 63.id)}}",
+                "destination": "team",
+                "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
+                "useDomainAdminAccess": false
+              },
+              "metadata": {
+                "designer": {
+                  "x": 6900,
+                  "y": 300,
+                  "name": "Create Tier 4 (year) folder"
+                },
+                "restore": {
+                  "expect": {
+                    "folderId": {
+                      "mode": "edit",
+                      "path": []
+                    },
+                    "destination": {
+                      "label": "Google Shared Drive"
+                    },
+                    "sharedDrive": {
+                      "mode": "chose",
+                      "label": "Bitesize Bio Shared Drive"
+                    },
+                    "useDomainAdminAccess": {
+                      "label": "No"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google-restricted"
+                      },
+                      "label": "My Google Restricted connection (fraser@bitesizebio.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-restricted",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "destination",
+                    "type": "select",
+                    "label": "New Drive Location",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share",
+                        "team"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "useDomainAdminAccess",
+                    "type": "select",
+                    "label": "Use Domain Admin Access",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "type": "text",
+                    "label": "New Folder's Name"
+                  },
+                  {
+                    "name": "sharedDrive",
+                    "type": "select",
+                    "label": "Shared Drive",
+                    "required": true
+                  },
+                  {
+                    "name": "folderId",
+                    "type": "folder",
+                    "label": "New Folder Location"
+                  }
+                ]
+              },
+              "filter": {
+                "name": "Only if Tier 4 folder missing",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{59.year_folder_id}}",
+                      "b": "",
+                      "o": "text:empty"
+                    }
+                  ]
+                ]
+              }
             }
           ]
-        ]
-      }
+        },
+        {
+          "flow": [
+            {
+              "id": 94,
+              "module": "placeholder:Placeholder",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": {
+                "designer": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-      "id": 65,
-      "module": "postgres:StoredProcedure",
-      "version": 2,
-      "parameters": {
-        "ignore": false,
-        "spname": "\"public\".\"upsert_product_folder\"",
-        "account": 13330461,
-        "isToManageDataInSharedTransaction": true
-      },
-      "mapper": {
-        "@01:text": "{{2.`5`}}",
-        "@02:text": "{{40.`0`}}",
-        "@03:text": "{{formatDate(2.`3`; \"YYYY\")}}",
-        "@04:text": "{{ifempty(59.product_type_folder_id; 63.id)}}",
-        "@05:text": "{{ifempty(59.year_folder_id; 64.id)}}"
-      },
+      "id": 74,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {},
+      "mapper": null,
       "metadata": {
         "designer": {
           "x": 7200,
-          "y": 300,
-          "name": "Store Tier 3+4 folder IDs"
-        },
-        "restore": {
-          "parameters": {
-            "spname": {
-              "label": "public.upsert_product_folder"
-            },
-            "account": {
-              "data": {
-                "scoped": "true",
-                "connection": "postgres"
-              },
-              "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
-            }
-          }
-        },
-        "interface": [
-          {
-            "name": "upsert_product_folder",
-            "type": "text",
-            "label": "upsert_product_folder"
-          }
-        ]
+          "y": 0
+        }
       },
-      "filter": {
-        "name": "Only if Tier 3 or Tier 4 was missing",
-        "conditions": [
-          [
+      "routes": [
+        {
+          "flow": [
             {
-              "a": "{{59.product_type_folder_id}}",
-              "b": "",
-              "o": "text:empty"
-            }
-          ],
-          [
-            {
-              "a": "{{59.year_folder_id}}",
-              "b": "",
-              "o": "text:empty"
+              "id": 65,
+              "module": "postgres:StoredProcedure",
+              "version": 2,
+              "parameters": {
+                "ignore": false,
+                "spname": "\"public\".\"upsert_product_folder\"",
+                "account": 13330461,
+                "isToManageDataInSharedTransaction": true
+              },
+              "mapper": {
+                "@01:text": "{{2.`5`}}",
+                "@02:text": "{{40.`0`}}",
+                "@03:text": "{{formatDate(2.`3`; \"YYYY\")}}",
+                "@04:text": "{{ifempty(59.product_type_folder_id; 63.id)}}",
+                "@05:text": "{{ifempty(59.year_folder_id; 64.id)}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 7200,
+                  "y": 300,
+                  "name": "Store Tier 3+4 folder IDs"
+                },
+                "restore": {
+                  "parameters": {
+                    "spname": {
+                      "label": "public.upsert_product_folder"
+                    },
+                    "account": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "postgres"
+                      },
+                      "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
+                    }
+                  }
+                },
+                "interface": [
+                  {
+                    "name": "upsert_product_folder",
+                    "type": "text",
+                    "label": "upsert_product_folder"
+                  }
+                ]
+              },
+              "filter": {
+                "name": "Only if Tier 3 or Tier 4 was missing",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{59.product_type_folder_id}}",
+                      "b": "",
+                      "o": "text:empty"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{59.year_folder_id}}",
+                      "b": "",
+                      "o": "text:empty"
+                    }
+                  ]
+                ]
+              }
             }
           ]
-        ]
-      }
+        },
+        {
+          "flow": [
+            {
+              "id": 95,
+              "module": "placeholder:Placeholder",
+              "version": 1,
+              "parameters": {},
+              "mapper": {},
+              "metadata": {
+                "designer": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "id": 66,
@@ -6743,7 +6959,7 @@
                 {
                   "flow": [
                     {
-                      "id": 65,
+                      "id": 80,
                       "module": "placeholder:Placeholder",
                       "filter": {
                         "name": "Microscopy Focus",
@@ -6996,7 +7212,7 @@
         {
           "flow": [
             {
-              "id": 66,
+              "id": 81,
               "module": "placeholder:Placeholder",
               "filter": {
                 "name": "EBlast",
