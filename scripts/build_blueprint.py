@@ -356,7 +356,18 @@ for m in flow:
     if m.get('id') == 54:
         m['mapper']['@03:text'] = METABASE_IO_URL
 
-# 4. Replace module 23 with new modules 57-68
+# 4. Module 41: strip deliverables to product type only
+for m in flow:
+    if m.get('id') == 41:
+        m['mapper']['value'] = '- {{40.`0`}}'
+
+# 5. Module 47: add Metabase IO dashboard link to goal notes
+METABASE_GOAL_SUFFIX = '\n\nFull IO details: ' + METABASE_IO_URL
+for m in flow:
+    if m.get('id') == 47:
+        m['mapper']['data']['notes'] += METABASE_GOAL_SUFFIX
+
+# 6. Replace module 23 with new modules 57-68
 for i, m in enumerate(flow):
     if m.get('id') == 23:
         flow[i:i+1] = new_modules
