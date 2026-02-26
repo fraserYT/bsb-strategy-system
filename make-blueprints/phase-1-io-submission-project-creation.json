@@ -4798,7 +4798,7 @@
       "mapper": {
         "@01:text": "{{2.`4`}}",
         "@02:text": "{{9.`Asana Link`}}",
-        "@03:text": "https://drive.google.com/drive/u/0/folders/{{12.id}}",
+        "@03:text": "https://drive.google.com/drive/u/0/folders/{{66.id}}",
         "@04:text": "{{14.data.data.gid}}"
       },
       "metadata": {

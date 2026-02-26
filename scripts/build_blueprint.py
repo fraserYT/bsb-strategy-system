@@ -350,7 +350,12 @@ for m in flow:
     if m.get('id') == 10:
         m['mapper']['values'].pop('18', None)
 
-# 3. Replace module 23 with new modules 57-68
+# 3. Module 54: update Drive link to reference module 66 (IO folder) instead of removed module 12
+for m in flow:
+    if m.get('id') == 54:
+        m['mapper']['@03:text'] = m['mapper']['@03:text'].replace('{{12.id}}', '{{66.id}}')
+
+# 4. Replace module 23 with new modules 57-68
 for i, m in enumerate(flow):
     if m.get('id') == 23:
         flow[i:i+1] = new_modules
