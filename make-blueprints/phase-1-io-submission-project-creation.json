@@ -1017,7 +1017,7 @@
         "rowSeparator": "\n"
       },
       "mapper": {
-        "value": "- {{40.`0`}}"
+        "value": "- {{40.`0`}} | {{40.`1`}}"
       },
       "metadata": {
         "designer": {
@@ -1164,7 +1164,7 @@
       "mapper": {
         "data": {
           "name": "{{2.`4`}}, {{2.`3`}}, {{2.`0`}}, {{2.`5`}}, {{2.`16`}}",
-          "notes": "Client: {{2.`15`}}\nSalesperson Name: {{2.`0`}}\nDate IO Signed: {{2.`3`}}\nBsB Client Code: {{2.`5`}}\nIO Number: {{2.`4`}}\nMain Client Contact: {{2.`8`}} | {{2.`9`}}\nAdditional Contacts:\n{{27.additionalContacts}}\nNotes: {{2.`11`}}\n\nDELIVERABLES\n{{41.text}}\n\nFull IO details: https://bionic-dashboard-aevhj.kinsta.app/dashboard/3-io-overview?io_reference={{2.`4`}}",
+          "notes": "Client: {{2.`15`}}\nSalesperson Name: {{2.`0`}}\nDate IO Signed: {{2.`3`}}\nBsB Client Code: {{2.`5`}}\nIO Number: {{2.`4`}}\nMain Client Contact: {{2.`8`}} | {{2.`9`}}\nAdditional Contacts:\n{{27.additionalContacts}}\nNotes: {{2.`11`}}\n\nDELIVERABLES\n{{41.text}}",
           "owner": "1173809660626097",
           "workspace": "10928367000451",
           "time_period": "1203118537322465"
@@ -1583,8 +1583,8 @@
       },
       "mapper": {
         "due": "date",
-        "name": "\ud83c\udd95\u2139\ufe0f0\ufe0f\u20e3 {{2.`4`}}, {{2.`3`}},\n {{2.`0`}}, {{2.`5`}}, {{2.`16`}}",
-        "notes": "Google Sheet Templates\nGoogle Doc Templates\nGoogle Slide Templates\nAsana Templates\nClient Project Drive Folders\nClient Directory List\nGuide to Asana Project Access\nLink to IO: {{2.`13`}}\n\nTask Process Checklist\n(Production) Acknowledge receipt of the IO with the client, using the template below and updating where required. \n\nIf @Andy Campbell is available, reassign the task to him for Asana and Drive setup. If @Andy Campbell is not available, the remainder of the process should be completed by Production or @Jane Gray.\n\nIO Task Setup ([BsB] IO Submission Log)\nInside the IO Project (on this task)\nAdjust the task title\nIf the full client name is missing or appears as other, please update it or add it to the task title.\nAssign Client (Selecting from the DropDown List)\nIf the client does not exist, edit the options by scrolling to the bottom of the list.\nOnce in the edit menu, scroll down to the bottom of the list.\nAdd Client with code in []'s.\nSort it into alphabetical order.\nEnsure the client appears in the list and assign it to this task.\n\nGoal Setup (View goals)\nCreate a new goal\nBlank Goal\nCopy the IO Submission task title to the goal title.\nChange the time period to FYxx (replace xx with the year, do not use H or Q separation).\nAdd Members (Teams):\nEditorial\nProduction\nInfrastructure\nSales\nDirectors\nIn the new goal, adjust progress settings\nChange the setup to Projects\nChange Reminder Cadence to Never\nSave\nCopy Goal Link (From top Arrow)\nAdd the goal link to the IO submission task.\nFrom the IO Task, copy the Fields section goal description.\nDelete the last Field (Goal Link).\nAdd a short list of Deliverables to the bottom of the goal description (copy from the IO document).\nThis can be a copy and paste from the IO document, or a simplified list if everything is as standard.\n\nSet up IO Project(s) - Repeat for each project in the IO submission.\nOpen Asana Templates\nFind the relevant template\nDuplicate\nChange project name\n[ARR] dates/description [xxx001] [IO NUMBER]\nChange the team to lead the team for that type of project.\nTick everything except task collaborators and greyed-out options.\nDuplicate.\nOpen the new project (This may take a moment).\nCopy the description from the Goal to the Project Overview\nAdd to the goal from the project overview\nConnect to portfolios (Ensure adding to add ((All Open Client Projects)) alongside all other relevant ones)\nShare the project with all relevant teams if not already done by the template:\nInfrastructure & Project Leading Team should be \"Project Admin\"\nOther invested teams should be assigned as \"Editor\".\nAll Science Squared Limited should be as \"Commenter\".\nRemove the template sandbox team\nA full guide is available here.\nReturn to list view\nAssign the initial tasks\nPerform initial tasks as required to complete the setup: \nTasks to set up folders & files.\nSet up tasks for WF support to set up additional links.\nSet up initial contact tasks.\nRepeat all of the above for each project required for the IO.\n\nMark the IO Submission Task Complete\n\nClient Acknowledgement Email Template Email\n\nSubject: Bitesize Bio [Project Type or \"Projects\"] [CLIENT CODE] [IO NUMBER]\nTo: [ALL LISTED CLIENT CONTACTS]\ncc: production@bitesizebio.com, editorial-team@bitesizebio.com\nbcc: customercare@bitesizebio.com & cc@pipelinedeals.com\n\nHello [NAME],\n\nI hope you are well.\n\nThank you for your order with Bitesize Bio. We are looking forward to working with you on this.\n\nTo summarise, we will be delivering:\n[LIST OF DELIVERABLES, SUMMARISED]\n[LIST OF DELIVERABLES, SUMMARISED]\n[LIST OF DELIVERABLES, SUMMARISED]\n[LIST OF DELIVERABLES, SUMMARISED]\n\nYour Bitesize Bio contacts will be:\u00a0\n\nProduction:\u00a0@Production Team\nEditorial:\u00a0@Bitesize Bio Editorial Team\n\nOur team will reach out shortly to begin booking your projects. If you have any questions, please do not hesitate to let me know. \n\nThank you again & kind regards,\n\n[Sender Name]",
+        "name": "🆕ℹ️0️⃣ {{2.`4`}}, {{2.`3`}},\n {{2.`0`}}, {{2.`5`}}, {{2.`16`}}",
+        "notes": "Google Sheet Templates\nGoogle Doc Templates\nGoogle Slide Templates\nAsana Templates\nClient Project Drive Folders\nClient Directory List\nGuide to Asana Project Access\nLink to IO: {{2.`13`}}\n\nTask Process Checklist\n(Production) Acknowledge receipt of the IO with the client, using the template below and updating where required. \n\nIf @Andy Campbell is available, reassign the task to him for Asana and Drive setup. If @Andy Campbell is not available, the remainder of the process should be completed by Production or @Jane Gray.\n\nIO Task Setup ([BsB] IO Submission Log)\nInside the IO Project (on this task)\nAdjust the task title\nIf the full client name is missing or appears as other, please update it or add it to the task title.\nAssign Client (Selecting from the DropDown List)\nIf the client does not exist, edit the options by scrolling to the bottom of the list.\nOnce in the edit menu, scroll down to the bottom of the list.\nAdd Client with code in []'s.\nSort it into alphabetical order.\nEnsure the client appears in the list and assign it to this task.\n\nGoal Setup (View goals)\nCreate a new goal\nBlank Goal\nCopy the IO Submission task title to the goal title.\nChange the time period to FYxx (replace xx with the year, do not use H or Q separation).\nAdd Members (Teams):\nEditorial\nProduction\nInfrastructure\nSales\nDirectors\nIn the new goal, adjust progress settings\nChange the setup to Projects\nChange Reminder Cadence to Never\nSave\nCopy Goal Link (From top Arrow)\nAdd the goal link to the IO submission task.\nFrom the IO Task, copy the Fields section goal description.\nDelete the last Field (Goal Link).\nAdd a short list of Deliverables to the bottom of the goal description (copy from the IO document).\nThis can be a copy and paste from the IO document, or a simplified list if everything is as standard.\n\nSet up IO Project(s) - Repeat for each project in the IO submission.\nOpen Asana Templates\nFind the relevant template\nDuplicate\nChange project name\n[ARR] dates/description [xxx001] [IO NUMBER]\nChange the team to lead the team for that type of project.\nTick everything except task collaborators and greyed-out options.\nDuplicate.\nOpen the new project (This may take a moment).\nCopy the description from the Goal to the Project Overview\nAdd to the goal from the project overview\nConnect to portfolios (Ensure adding to add ((All Open Client Projects)) alongside all other relevant ones)\nShare the project with all relevant teams if not already done by the template:\nInfrastructure & Project Leading Team should be \"Project Admin\"\nOther invested teams should be assigned as \"Editor\".\nAll Science Squared Limited should be as \"Commenter\".\nRemove the template sandbox team\nA full guide is available here.\nReturn to list view\nAssign the initial tasks\nPerform initial tasks as required to complete the setup: \nTasks to set up folders & files.\nSet up tasks for WF support to set up additional links.\nSet up initial contact tasks.\nRepeat all of the above for each project required for the IO.\n\nMark the IO Submission Task Complete\n\nClient Acknowledgement Email Template Email\n\nSubject: Bitesize Bio [Project Type or \"Projects\"] [CLIENT CODE] [IO NUMBER]\nTo: [ALL LISTED CLIENT CONTACTS]\ncc: production@bitesizebio.com, editorial-team@bitesizebio.com\nbcc: customercare@bitesizebio.com & cc@pipelinedeals.com\n\nHello [NAME],\n\nI hope you are well.\n\nThank you for your order with Bitesize Bio. We are looking forward to working with you on this.\n\nTo summarise, we will be delivering:\n[LIST OF DELIVERABLES, SUMMARISED]\n[LIST OF DELIVERABLES, SUMMARISED]\n[LIST OF DELIVERABLES, SUMMARISED]\n[LIST OF DELIVERABLES, SUMMARISED]\n\nYour Bitesize Bio contacts will be: \n\nProduction: @Production Team\nEditorial: @Bitesize Bio Editorial Team\n\nOur team will reach out shortly to begin booking your projects. If you have any questions, please do not hesitate to let me know. \n\nThank you again & kind regards,\n\n[Sender Name]",
         "due_on": "{{2.`2`}}",
         "assignee": "1196837464997569",
         "external": {},
@@ -2097,7 +2097,7 @@
                           "value": "1202160600877213"
                         },
                         {
-                          "label": "Merck | Sigma-Aldrich\u00ae [MMS]",
+                          "label": "Merck | Sigma-Aldrich® [MMS]",
                           "value": "1202160671339476"
                         },
                         {
@@ -3901,6 +3901,109 @@
       }
     },
     {
+      "id": 12,
+      "module": "google-drive:createAFolder",
+      "version": 4,
+      "parameters": {
+        "__IMTCONN__": 9173518
+      },
+      "mapper": {
+        "name": "{{2.`3`}} - {{2.`15`}}",
+        "folderId": "/1Y5dFasGvhto2ILmBAE7ikbxkpua1jkfQ/1iWS-4Jzwm7DA5tG24hROPitmOxMWSQT1",
+        "destination": "team",
+        "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
+        "useDomainAdminAccess": false
+      },
+      "metadata": {
+        "designer": {
+          "x": 2700,
+          "y": 300,
+          "name": "Create folder In Drive"
+        },
+        "restore": {
+          "expect": {
+            "folderId": {
+              "mode": "chose",
+              "path": [
+                "Process Automation",
+                "IOs"
+              ]
+            },
+            "destination": {
+              "label": "Google Shared Drive"
+            },
+            "sharedDrive": {
+              "mode": "chose",
+              "label": "Bitesize Bio Shared Drive"
+            },
+            "useDomainAdminAccess": {
+              "label": "No"
+            }
+          },
+          "parameters": {
+            "__IMTCONN__": {
+              "data": {
+                "scoped": "true",
+                "connection": "google-restricted"
+              },
+              "label": "My Google Restricted connection (fraser@bitesizebio.com)"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "__IMTCONN__",
+            "type": "account:google-restricted",
+            "label": "Connection",
+            "required": true
+          }
+        ],
+        "expect": [
+          {
+            "name": "destination",
+            "type": "select",
+            "label": "New Drive Location",
+            "required": true,
+            "validate": {
+              "enum": [
+                "drive",
+                "share",
+                "team"
+              ]
+            }
+          },
+          {
+            "name": "useDomainAdminAccess",
+            "type": "select",
+            "label": "Use Domain Admin Access",
+            "required": true,
+            "validate": {
+              "enum": [
+                true,
+                false
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "label": "New Folder's Name"
+          },
+          {
+            "name": "sharedDrive",
+            "type": "select",
+            "label": "Shared Drive",
+            "required": true
+          },
+          {
+            "name": "folderId",
+            "type": "folder",
+            "label": "New Folder Location"
+          }
+        ]
+      }
+    },
+    {
       "id": 48,
       "module": "slack:CreateMessage",
       "version": 4,
@@ -4077,6 +4180,7 @@
         "mode": "select",
         "values": {
           "17": "{{9.`Asana Link`}}",
+          "18": "https://drive.google.com/drive/u/0/folders/{{12.id}}",
           "19": "{{14.data.data.gid}}"
         },
         "sheetId": "IO Forms",
@@ -4799,7 +4903,7 @@
       "mapper": {
         "@01:text": "{{2.`4`}}",
         "@02:text": "{{9.`Asana Link`}}",
-        "@03:text": "https://bionic-dashboard-aevhj.kinsta.app/dashboard/3-io-overview?io_reference={{2.`4`}}",
+        "@03:text": "https://drive.google.com/drive/u/0/folders/{{12.id}}",
         "@04:text": "{{14.data.data.gid}}"
       },
       "metadata": {
@@ -5684,1010 +5788,23 @@
       }
     },
     {
-      "id": 57,
-      "module": "util:SetVariables",
-      "version": 1,
-      "parameters": {},
-      "mapper": {
-        "scope": "roundtrip",
-        "variables": [
-          {
-            "name": "tier3FolderName",
-            "value": "{{if(40.`0` = \"Live Event\"; \"Live Events\"; if(40.`0` = \"eBlast\"; \"eBlasts\"; if(40.`0` = \"Podcast\"; \"Podcasts\"; if(40.`0` = \"Newsletter Banner\"; \"Newsletter Banners\"; if(40.`0` = \"Website Banner\"; \"Website Banners\"; if(40.`0` = \"Multi-Session Live Event\"; \"Multi-Session Live Events\"; if(40.`0` = \"Article\"; \"Articles\"; if(40.`0` = \"Ebook\"; \"Ebooks\"; if(40.`0` = \"Masterclass\"; \"Masterclasses\"; 40.`0`)))))))))}}"
-          },
-          {
-            "name": "ioFolderName",
-            "value": "[{{2.`5`}}] {{2.`4`}} {{2.`3`}} {{40.`0`}} ({{32.`Unique ID`}})"
-          }
-        ]
-      },
-      "metadata": {
-        "designer": {
-          "x": 4800,
-          "y": 300,
-          "name": "Set Drive folder variables"
-        },
-        "restore": {
-          "expect": {
-            "scope": {
-              "label": "One cycle"
-            },
-            "variables": {
-              "items": [
-                null,
-                null
-              ]
-            }
-          }
-        },
-        "expect": [
-          {
-            "name": "variables",
-            "spec": [
-              {
-                "name": "name",
-                "type": "text",
-                "label": "Variable name",
-                "required": true
-              },
-              {
-                "name": "value",
-                "type": "any",
-                "label": "Variable value"
-              }
-            ],
-            "type": "array",
-            "label": "Variables"
-          },
-          {
-            "name": "scope",
-            "type": "select",
-            "label": "Variable lifetime",
-            "required": true,
-            "validate": {
-              "enum": [
-                "roundtrip",
-                "execution"
-              ]
-            }
-          }
-        ],
-        "interface": [
-          {
-            "name": "tier3FolderName",
-            "type": "any",
-            "label": "tier3FolderName"
-          },
-          {
-            "name": "ioFolderName",
-            "type": "any",
-            "label": "ioFolderName"
-          }
-        ]
-      }
-    },
-    {
-      "id": 58,
-      "module": "postgres:StoredProcedure",
-      "version": 2,
-      "parameters": {
-        "ignore": false,
-        "spname": "\"public\".\"get_client_folder_info\"",
-        "account": 13330461,
-        "isToManageDataInSharedTransaction": true
-      },
-      "mapper": {
-        "@01:text": "{{2.`5`}}"
-      },
-      "metadata": {
-        "designer": {
-          "x": 5100,
-          "y": 300,
-          "name": "Look up client folder IDs"
-        },
-        "restore": {
-          "parameters": {
-            "spname": {
-              "label": "public.get_client_folder_info"
-            },
-            "account": {
-              "data": {
-                "scoped": "true",
-                "connection": "postgres"
-              },
-              "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
-            }
-          }
-        },
-        "interface": [
-          {
-            "name": "tla",
-            "type": "text",
-            "label": "tla"
-          },
-          {
-            "name": "client_name",
-            "type": "text",
-            "label": "client_name"
-          },
-          {
-            "name": "primary_contact",
-            "type": "text",
-            "label": "primary_contact"
-          },
-          {
-            "name": "tier1_folder_id",
-            "type": "text",
-            "label": "tier1_folder_id"
-          },
-          {
-            "name": "tier2_folder_id",
-            "type": "text",
-            "label": "tier2_folder_id"
-          }
-        ]
-      }
-    },
-    {
-      "id": 59,
-      "module": "postgres:StoredProcedure",
-      "version": 2,
-      "parameters": {
-        "ignore": false,
-        "spname": "\"public\".\"get_product_folder_info\"",
-        "account": 13330461,
-        "isToManageDataInSharedTransaction": true
-      },
-      "mapper": {
-        "@01:text": "{{2.`5`}}",
-        "@02:text": "{{40.`0`}}",
-        "@03:text": "{{formatDate(2.`3`; \"YYYY\")}}"
-      },
-      "metadata": {
-        "designer": {
-          "x": 5400,
-          "y": 300,
-          "name": "Look up product folder IDs"
-        },
-        "restore": {
-          "parameters": {
-            "spname": {
-              "label": "public.get_product_folder_info"
-            },
-            "account": {
-              "data": {
-                "scoped": "true",
-                "connection": "postgres"
-              },
-              "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
-            }
-          }
-        },
-        "interface": [
-          {
-            "name": "product_type_folder_id",
-            "type": "text",
-            "label": "product_type_folder_id"
-          },
-          {
-            "name": "year_folder_id",
-            "type": "text",
-            "label": "year_folder_id"
-          }
-        ]
-      }
-    },
-    {
-      "id": 69,
-      "module": "builtin:BasicRouter",
-      "version": 1,
-      "parameters": {},
-      "mapper": null,
-      "metadata": {
-        "designer": {
-          "x": 5700,
-          "y": 0
-        }
-      },
-      "routes": [
-        {
-          "flow": [
-            {
-              "id": 60,
-              "module": "google-drive:createAFolder",
-              "version": 4,
-              "parameters": {
-                "__IMTCONN__": 9173518
-              },
-              "mapper": {
-                "name": "[{{58.tla}}] {{58.client_name}}",
-                "folderId": "1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht",
-                "destination": "team",
-                "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
-                "useDomainAdminAccess": false
-              },
-              "metadata": {
-                "designer": {
-                  "x": 5700,
-                  "y": 300,
-                  "name": "Create Tier 1 (company) folder"
-                },
-                "restore": {
-                  "expect": {
-                    "folderId": {
-                      "mode": "edit",
-                      "path": []
-                    },
-                    "destination": {
-                      "label": "Google Shared Drive"
-                    },
-                    "sharedDrive": {
-                      "mode": "chose",
-                      "label": "Bitesize Bio Shared Drive"
-                    },
-                    "useDomainAdminAccess": {
-                      "label": "No"
-                    }
-                  },
-                  "parameters": {
-                    "__IMTCONN__": {
-                      "data": {
-                        "scoped": "true",
-                        "connection": "google-restricted"
-                      },
-                      "label": "My Google Restricted connection (fraser@bitesizebio.com)"
-                    }
-                  }
-                },
-                "parameters": [
-                  {
-                    "name": "__IMTCONN__",
-                    "type": "account:google-restricted",
-                    "label": "Connection",
-                    "required": true
-                  }
-                ],
-                "expect": [
-                  {
-                    "name": "destination",
-                    "type": "select",
-                    "label": "New Drive Location",
-                    "required": true,
-                    "validate": {
-                      "enum": [
-                        "drive",
-                        "share",
-                        "team"
-                      ]
-                    }
-                  },
-                  {
-                    "name": "useDomainAdminAccess",
-                    "type": "select",
-                    "label": "Use Domain Admin Access",
-                    "required": true,
-                    "validate": {
-                      "enum": [
-                        true,
-                        false
-                      ]
-                    }
-                  },
-                  {
-                    "name": "name",
-                    "type": "text",
-                    "label": "New Folder's Name"
-                  },
-                  {
-                    "name": "sharedDrive",
-                    "type": "select",
-                    "label": "Shared Drive",
-                    "required": true
-                  },
-                  {
-                    "name": "folderId",
-                    "type": "folder",
-                    "label": "New Folder Location"
-                  }
-                ]
-              },
-              "filter": {
-                "name": "Only if Tier 1 folder missing",
-                "conditions": [
-                  [
-                    {
-                      "a": "{{58.tier1_folder_id}}",
-                      "b": "",
-                      "o": "text:empty"
-                    }
-                  ]
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "flow": [
-            {
-              "id": 90,
-              "module": "placeholder:Placeholder",
-              "version": 1,
-              "parameters": {},
-              "mapper": {},
-              "metadata": {
-                "designer": {
-                  "x": 0,
-                  "y": 0
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 70,
-      "module": "builtin:BasicRouter",
-      "version": 1,
-      "parameters": {},
-      "mapper": null,
-      "metadata": {
-        "designer": {
-          "x": 6000,
-          "y": 0
-        }
-      },
-      "routes": [
-        {
-          "flow": [
-            {
-              "id": 61,
-              "module": "google-drive:createAFolder",
-              "version": 4,
-              "parameters": {
-                "__IMTCONN__": 9173518
-              },
-              "mapper": {
-                "name": "[{{2.`5`}}] {{58.primary_contact}}",
-                "folderId": "{{ifempty(58.tier1_folder_id; 60.id)}}",
-                "destination": "team",
-                "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
-                "useDomainAdminAccess": false
-              },
-              "metadata": {
-                "designer": {
-                  "x": 6000,
-                  "y": 300,
-                  "name": "Create Tier 2 (contact) folder"
-                },
-                "restore": {
-                  "expect": {
-                    "folderId": {
-                      "mode": "edit",
-                      "path": []
-                    },
-                    "destination": {
-                      "label": "Google Shared Drive"
-                    },
-                    "sharedDrive": {
-                      "mode": "chose",
-                      "label": "Bitesize Bio Shared Drive"
-                    },
-                    "useDomainAdminAccess": {
-                      "label": "No"
-                    }
-                  },
-                  "parameters": {
-                    "__IMTCONN__": {
-                      "data": {
-                        "scoped": "true",
-                        "connection": "google-restricted"
-                      },
-                      "label": "My Google Restricted connection (fraser@bitesizebio.com)"
-                    }
-                  }
-                },
-                "parameters": [
-                  {
-                    "name": "__IMTCONN__",
-                    "type": "account:google-restricted",
-                    "label": "Connection",
-                    "required": true
-                  }
-                ],
-                "expect": [
-                  {
-                    "name": "destination",
-                    "type": "select",
-                    "label": "New Drive Location",
-                    "required": true,
-                    "validate": {
-                      "enum": [
-                        "drive",
-                        "share",
-                        "team"
-                      ]
-                    }
-                  },
-                  {
-                    "name": "useDomainAdminAccess",
-                    "type": "select",
-                    "label": "Use Domain Admin Access",
-                    "required": true,
-                    "validate": {
-                      "enum": [
-                        true,
-                        false
-                      ]
-                    }
-                  },
-                  {
-                    "name": "name",
-                    "type": "text",
-                    "label": "New Folder's Name"
-                  },
-                  {
-                    "name": "sharedDrive",
-                    "type": "select",
-                    "label": "Shared Drive",
-                    "required": true
-                  },
-                  {
-                    "name": "folderId",
-                    "type": "folder",
-                    "label": "New Folder Location"
-                  }
-                ]
-              },
-              "filter": {
-                "name": "Only if Tier 2 folder missing",
-                "conditions": [
-                  [
-                    {
-                      "a": "{{58.tier2_folder_id}}",
-                      "b": "",
-                      "o": "text:empty"
-                    }
-                  ]
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "flow": [
-            {
-              "id": 91,
-              "module": "placeholder:Placeholder",
-              "version": 1,
-              "parameters": {},
-              "mapper": {},
-              "metadata": {
-                "designer": {
-                  "x": 0,
-                  "y": 0
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 71,
-      "module": "builtin:BasicRouter",
-      "version": 1,
-      "parameters": {},
-      "mapper": null,
-      "metadata": {
-        "designer": {
-          "x": 6300,
-          "y": 0
-        }
-      },
-      "routes": [
-        {
-          "flow": [
-            {
-              "id": 62,
-              "module": "postgres:StoredProcedure",
-              "version": 2,
-              "parameters": {
-                "ignore": false,
-                "spname": "\"public\".\"update_client_folder_ids\"",
-                "account": 13330461,
-                "isToManageDataInSharedTransaction": true
-              },
-              "mapper": {
-                "@01:text": "{{2.`5`}}",
-                "@02:text": "{{ifempty(58.tier1_folder_id; 60.id)}}",
-                "@03:text": "{{ifempty(58.tier2_folder_id; 61.id)}}"
-              },
-              "metadata": {
-                "designer": {
-                  "x": 6300,
-                  "y": 300,
-                  "name": "Store Tier 1+2 folder IDs"
-                },
-                "restore": {
-                  "parameters": {
-                    "spname": {
-                      "label": "public.update_client_folder_ids"
-                    },
-                    "account": {
-                      "data": {
-                        "scoped": "true",
-                        "connection": "postgres"
-                      },
-                      "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
-                    }
-                  }
-                },
-                "interface": [
-                  {
-                    "name": "update_client_folder_ids",
-                    "type": "boolean",
-                    "label": "update_client_folder_ids"
-                  }
-                ]
-              },
-              "filter": {
-                "name": "Only if Tier 1 or Tier 2 was missing",
-                "conditions": [
-                  [
-                    {
-                      "a": "{{58.tier1_folder_id}}",
-                      "b": "",
-                      "o": "text:empty"
-                    }
-                  ],
-                  [
-                    {
-                      "a": "{{58.tier2_folder_id}}",
-                      "b": "",
-                      "o": "text:empty"
-                    }
-                  ]
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "flow": [
-            {
-              "id": 92,
-              "module": "placeholder:Placeholder",
-              "version": 1,
-              "parameters": {},
-              "mapper": {},
-              "metadata": {
-                "designer": {
-                  "x": 0,
-                  "y": 0
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 72,
-      "module": "builtin:BasicRouter",
-      "version": 1,
-      "parameters": {},
-      "mapper": null,
-      "metadata": {
-        "designer": {
-          "x": 6600,
-          "y": 0
-        }
-      },
-      "routes": [
-        {
-          "flow": [
-            {
-              "id": 63,
-              "module": "google-drive:createAFolder",
-              "version": 4,
-              "parameters": {
-                "__IMTCONN__": 9173518
-              },
-              "mapper": {
-                "name": "[{{2.`5`}}] {{57.tier3FolderName}}",
-                "folderId": "{{ifempty(58.tier2_folder_id; 61.id)}}",
-                "destination": "team",
-                "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
-                "useDomainAdminAccess": false
-              },
-              "metadata": {
-                "designer": {
-                  "x": 6600,
-                  "y": 300,
-                  "name": "Create Tier 3 (product type) folder"
-                },
-                "restore": {
-                  "expect": {
-                    "folderId": {
-                      "mode": "edit",
-                      "path": []
-                    },
-                    "destination": {
-                      "label": "Google Shared Drive"
-                    },
-                    "sharedDrive": {
-                      "mode": "chose",
-                      "label": "Bitesize Bio Shared Drive"
-                    },
-                    "useDomainAdminAccess": {
-                      "label": "No"
-                    }
-                  },
-                  "parameters": {
-                    "__IMTCONN__": {
-                      "data": {
-                        "scoped": "true",
-                        "connection": "google-restricted"
-                      },
-                      "label": "My Google Restricted connection (fraser@bitesizebio.com)"
-                    }
-                  }
-                },
-                "parameters": [
-                  {
-                    "name": "__IMTCONN__",
-                    "type": "account:google-restricted",
-                    "label": "Connection",
-                    "required": true
-                  }
-                ],
-                "expect": [
-                  {
-                    "name": "destination",
-                    "type": "select",
-                    "label": "New Drive Location",
-                    "required": true,
-                    "validate": {
-                      "enum": [
-                        "drive",
-                        "share",
-                        "team"
-                      ]
-                    }
-                  },
-                  {
-                    "name": "useDomainAdminAccess",
-                    "type": "select",
-                    "label": "Use Domain Admin Access",
-                    "required": true,
-                    "validate": {
-                      "enum": [
-                        true,
-                        false
-                      ]
-                    }
-                  },
-                  {
-                    "name": "name",
-                    "type": "text",
-                    "label": "New Folder's Name"
-                  },
-                  {
-                    "name": "sharedDrive",
-                    "type": "select",
-                    "label": "Shared Drive",
-                    "required": true
-                  },
-                  {
-                    "name": "folderId",
-                    "type": "folder",
-                    "label": "New Folder Location"
-                  }
-                ]
-              },
-              "filter": {
-                "name": "Only if Tier 3 folder missing",
-                "conditions": [
-                  [
-                    {
-                      "a": "{{59.product_type_folder_id}}",
-                      "b": "",
-                      "o": "text:empty"
-                    }
-                  ]
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "flow": [
-            {
-              "id": 93,
-              "module": "placeholder:Placeholder",
-              "version": 1,
-              "parameters": {},
-              "mapper": {},
-              "metadata": {
-                "designer": {
-                  "x": 0,
-                  "y": 0
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 73,
-      "module": "builtin:BasicRouter",
-      "version": 1,
-      "parameters": {},
-      "mapper": null,
-      "metadata": {
-        "designer": {
-          "x": 6900,
-          "y": 0
-        }
-      },
-      "routes": [
-        {
-          "flow": [
-            {
-              "id": 64,
-              "module": "google-drive:createAFolder",
-              "version": 4,
-              "parameters": {
-                "__IMTCONN__": 9173518
-              },
-              "mapper": {
-                "name": "{{formatDate(2.`3`; \"YYYY\")}}",
-                "folderId": "{{ifempty(59.product_type_folder_id; 63.id)}}",
-                "destination": "team",
-                "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
-                "useDomainAdminAccess": false
-              },
-              "metadata": {
-                "designer": {
-                  "x": 6900,
-                  "y": 300,
-                  "name": "Create Tier 4 (year) folder"
-                },
-                "restore": {
-                  "expect": {
-                    "folderId": {
-                      "mode": "edit",
-                      "path": []
-                    },
-                    "destination": {
-                      "label": "Google Shared Drive"
-                    },
-                    "sharedDrive": {
-                      "mode": "chose",
-                      "label": "Bitesize Bio Shared Drive"
-                    },
-                    "useDomainAdminAccess": {
-                      "label": "No"
-                    }
-                  },
-                  "parameters": {
-                    "__IMTCONN__": {
-                      "data": {
-                        "scoped": "true",
-                        "connection": "google-restricted"
-                      },
-                      "label": "My Google Restricted connection (fraser@bitesizebio.com)"
-                    }
-                  }
-                },
-                "parameters": [
-                  {
-                    "name": "__IMTCONN__",
-                    "type": "account:google-restricted",
-                    "label": "Connection",
-                    "required": true
-                  }
-                ],
-                "expect": [
-                  {
-                    "name": "destination",
-                    "type": "select",
-                    "label": "New Drive Location",
-                    "required": true,
-                    "validate": {
-                      "enum": [
-                        "drive",
-                        "share",
-                        "team"
-                      ]
-                    }
-                  },
-                  {
-                    "name": "useDomainAdminAccess",
-                    "type": "select",
-                    "label": "Use Domain Admin Access",
-                    "required": true,
-                    "validate": {
-                      "enum": [
-                        true,
-                        false
-                      ]
-                    }
-                  },
-                  {
-                    "name": "name",
-                    "type": "text",
-                    "label": "New Folder's Name"
-                  },
-                  {
-                    "name": "sharedDrive",
-                    "type": "select",
-                    "label": "Shared Drive",
-                    "required": true
-                  },
-                  {
-                    "name": "folderId",
-                    "type": "folder",
-                    "label": "New Folder Location"
-                  }
-                ]
-              },
-              "filter": {
-                "name": "Only if Tier 4 folder missing",
-                "conditions": [
-                  [
-                    {
-                      "a": "{{59.year_folder_id}}",
-                      "b": "",
-                      "o": "text:empty"
-                    }
-                  ]
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "flow": [
-            {
-              "id": 94,
-              "module": "placeholder:Placeholder",
-              "version": 1,
-              "parameters": {},
-              "mapper": {},
-              "metadata": {
-                "designer": {
-                  "x": 0,
-                  "y": 0
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 74,
-      "module": "builtin:BasicRouter",
-      "version": 1,
-      "parameters": {},
-      "mapper": null,
-      "metadata": {
-        "designer": {
-          "x": 7200,
-          "y": 0
-        }
-      },
-      "routes": [
-        {
-          "flow": [
-            {
-              "id": 65,
-              "module": "postgres:StoredProcedure",
-              "version": 2,
-              "parameters": {
-                "ignore": false,
-                "spname": "\"public\".\"upsert_product_folder\"",
-                "account": 13330461,
-                "isToManageDataInSharedTransaction": true
-              },
-              "mapper": {
-                "@01:text": "{{2.`5`}}",
-                "@02:text": "{{40.`0`}}",
-                "@03:text": "{{formatDate(2.`3`; \"YYYY\")}}",
-                "@04:text": "{{ifempty(59.product_type_folder_id; 63.id)}}",
-                "@05:text": "{{ifempty(59.year_folder_id; 64.id)}}"
-              },
-              "metadata": {
-                "designer": {
-                  "x": 7200,
-                  "y": 300,
-                  "name": "Store Tier 3+4 folder IDs"
-                },
-                "restore": {
-                  "parameters": {
-                    "spname": {
-                      "label": "public.upsert_product_folder"
-                    },
-                    "account": {
-                      "data": {
-                        "scoped": "true",
-                        "connection": "postgres"
-                      },
-                      "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
-                    }
-                  }
-                },
-                "interface": [
-                  {
-                    "name": "upsert_product_folder",
-                    "type": "text",
-                    "label": "upsert_product_folder"
-                  }
-                ]
-              },
-              "filter": {
-                "name": "Only if Tier 3 or Tier 4 was missing",
-                "conditions": [
-                  [
-                    {
-                      "a": "{{59.product_type_folder_id}}",
-                      "b": "",
-                      "o": "text:empty"
-                    }
-                  ],
-                  [
-                    {
-                      "a": "{{59.year_folder_id}}",
-                      "b": "",
-                      "o": "text:empty"
-                    }
-                  ]
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "flow": [
-            {
-              "id": 95,
-              "module": "placeholder:Placeholder",
-              "version": 1,
-              "parameters": {},
-              "mapper": {},
-              "metadata": {
-                "designer": {
-                  "x": 0,
-                  "y": 0
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 66,
+      "id": 23,
       "module": "google-drive:createAFolder",
       "version": 4,
       "parameters": {
         "__IMTCONN__": 9173518
       },
       "mapper": {
-        "name": "[{{2.`5`}}] {{2.`4`}} {{2.`3`}} {{40.`0`}} ({{32.`Unique ID`}})",
-        "folderId": "{{ifempty(59.year_folder_id; 64.id)}}",
+        "name": "{{17.`3`}} - {{17.`0`}} -{{2.`3`}} - {{32.`Unique ID`}}",
+        "folderId": "{{12.id}}",
         "destination": "team",
         "sharedDrive": "0AB1AZiOLJI_ZUk9PVA",
         "useDomainAdminAccess": false
       },
       "metadata": {
         "designer": {
-          "x": 7500,
-          "y": 300,
-          "name": "Create IO folder"
+          "x": 4800,
+          "y": 300
         },
         "restore": {
           "expect": {
@@ -6770,155 +5887,6 @@
       }
     },
     {
-      "id": 67,
-      "module": "postgres:StoredProcedure",
-      "version": 2,
-      "parameters": {
-        "ignore": false,
-        "spname": "\"public\".\"upsert_io_product\"",
-        "account": 13330461,
-        "isToManageDataInSharedTransaction": true
-      },
-      "mapper": {
-        "@01:text": "{{2.`4`}}",
-        "@02:text": "{{40.`0`}}",
-        "@03:text": "{{40.`1`}}",
-        "@04:text": "{{32.`Unique ID`}}",
-        "@05:text": "{{66.id}}"
-      },
-      "metadata": {
-        "designer": {
-          "x": 7800,
-          "y": 300,
-          "name": "Record product in DB"
-        },
-        "restore": {
-          "parameters": {
-            "spname": {
-              "label": "public.upsert_io_product"
-            },
-            "account": {
-              "data": {
-                "scoped": "true",
-                "connection": "postgres"
-              },
-              "label": "BitesizeDB (xerothermic-scarlet-cod@europe-north1-001.proxy.sevalla.app:30067/competitive-moccasin-vicuna)"
-            }
-          }
-        },
-        "interface": [
-          {
-            "name": "upsert_io_product",
-            "type": "integer",
-            "label": "upsert_io_product"
-          }
-        ]
-      }
-    },
-    {
-      "id": 68,
-      "module": "google-sheets:updateRow",
-      "version": 2,
-      "parameters": {
-        "__IMTCONN__": 8629994
-      },
-      "mapper": {
-        "from": "share",
-        "mode": "select",
-        "values": {
-          "4": "{{32.`Unique ID`}}"
-        },
-        "sheetId": "Products",
-        "rowNumber": "{{17.__ROW_NUMBER__}}",
-        "spreadsheetId": "/1tQfpYsQEfpO5XAPzWbkHUJeGWPKITDiSDOhp6GGJ0jA",
-        "includesHeaders": true,
-        "valueInputOption": "USER_ENTERED"
-      },
-      "metadata": {
-        "designer": {
-          "x": 8100,
-          "y": 300,
-          "name": "Write unique ID to Products sheet"
-        },
-        "restore": {
-          "expect": {
-            "from": {
-              "label": "Shared with me"
-            },
-            "mode": {
-              "label": "Search by path"
-            },
-            "sheetId": {
-              "label": "Products"
-            },
-            "spreadsheetId": {
-              "path": [
-                "IO Submissions"
-              ]
-            },
-            "includesHeaders": {
-              "label": "Yes",
-              "nested": [
-                {
-                  "name": "values",
-                  "spec": [
-                    {
-                      "name": "0",
-                      "type": "text",
-                      "label": "Product Type (A)"
-                    },
-                    {
-                      "name": "1",
-                      "type": "text",
-                      "label": "Product name (B)"
-                    },
-                    {
-                      "name": "2",
-                      "type": "text",
-                      "label": "Related IO (C)"
-                    },
-                    {
-                      "name": "3",
-                      "type": "text",
-                      "label": "Company Name (D)"
-                    },
-                    {
-                      "name": "4",
-                      "type": "text",
-                      "label": "Unique ID (E)"
-                    }
-                  ],
-                  "type": "collection",
-                  "label": "Values"
-                }
-              ]
-            },
-            "valueInputOption": {
-              "mode": "chose",
-              "label": "User entered"
-            }
-          },
-          "parameters": {
-            "__IMTCONN__": {
-              "data": {
-                "scoped": "true",
-                "connection": "google"
-              },
-              "label": "My Google connection (fraser@bitesizebio.com)"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "__IMTCONN__",
-            "type": "account:google",
-            "label": "Connection",
-            "required": true
-          }
-        ]
-      }
-    },
-    {
       "id": 18,
       "module": "builtin:BasicRouter",
       "version": 1,
@@ -6959,7 +5927,7 @@
                 {
                   "flow": [
                     {
-                      "id": 80,
+                      "id": 65,
                       "module": "placeholder:Placeholder",
                       "filter": {
                         "name": "Microscopy Focus",
@@ -7212,7 +6180,7 @@
         {
           "flow": [
             {
-              "id": 81,
+              "id": 66,
               "module": "placeholder:Placeholder",
               "filter": {
                 "name": "EBlast",
