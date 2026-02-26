@@ -90,6 +90,109 @@ The following are known issues being worked on:
 
 ---
 
+### 4-Tier Drive Folder Implementation — Manual Make.com Steps
+
+The 4-tier Drive folder logic (replacing flat modules 12 and 23) needs to be built manually in Make.com due to cross-branch reference scoping constraints. The programmatic blueprint approach breaks because Make.com does not allow modules in one router branch to reference outputs from a different router's branch.
+
+**The fix:** Add a SetVariables module in the **main flow** after each conditional router to resolve the folder ID before the next stage needs it. Because these SetVars are in the main flow (not inside a branch), they CAN reference module outputs from upstream router branches.
+
+**Full sequence to build inside the iterator (after module 32), replacing modules 12 and 23:**
+
+#### 57 — SetVariables
+- `tier3FolderName` → product type mapping:
+  `{{if(40.\`0\` = "Live Event"; "Live Events"; if(40.\`0\` = "eBlast"; "eBlasts"; if(40.\`0\` = "Podcast"; "Podcasts"; if(40.\`0\` = "Newsletter Banner"; "Newsletter Banners"; if(40.\`0\` = "Website Banner"; "Website Banners"; if(40.\`0\` = "Multi-Session Live Event"; "Multi-Session Live Events"; if(40.\`0\` = "Article"; "Articles"; if(40.\`0\` = "Ebook"; "Ebooks"; if(40.\`0\` = "Masterclass"; "Masterclasses"; 40.\`0\`)))))))))}}`
+- `ioFolderName` → `[{{2.\`5\`}}] {{2.\`4\`}} {{2.\`3\`}} {{40.\`0\`}} ({{32.\`Unique ID\`}})`
+
+#### 58 — PostgreSQL: `get_client_folder_info`
+- Param 1: `{{2.\`5\`}}` (client code)
+- Returns: `tla`, `client_name`, `primary_contact`, `tier1_folder_id`, `tier2_folder_id`
+
+#### 59 — PostgreSQL: `get_product_folder_info`
+- Param 1: `{{2.\`5\`}}` (client code)
+- Param 2: `{{40.\`0\`}}` (product type)
+- Param 3: `{{formatDate(2.\`3\`; "YYYY")}}` (year)
+- Returns: `product_type_folder_id`, `year_folder_id`
+
+#### Router 69 — Create Tier 1 if missing
+- Branch 1: filter `tier1_folder_id` is empty → **Drive: Create Folder** (module 60)
+  - Name: `[{{58.tla}}] {{58.client_name}}`
+  - Parent: Client Projects root folder ID `1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht`
+- Branch 2: pass-through placeholder
+
+#### SetVariables 75 — Resolve Tier 1 ID *(main flow, after router 69)*
+- `resolved_tier1` = `{{ifempty(58.tier1_folder_id; 60.id)}}`
+
+#### Router 70 — Create Tier 2 if missing
+- Branch 1: filter `tier2_folder_id` is empty → **Drive: Create Folder** (module 61)
+  - Name: `[{{2.\`5\`}}] {{58.primary_contact}}`
+  - Parent: `{{75.resolved_tier1}}`
+- Branch 2: pass-through placeholder
+
+#### SetVariables 76 — Resolve Tier 2 ID *(main flow, after router 70)*
+- `resolved_tier2` = `{{ifempty(58.tier2_folder_id; 61.id)}}`
+
+#### Router 71 — Store Tier 1+2 IDs if either was just created
+- Branch 1: filter `tier1_folder_id` OR `tier2_folder_id` is empty → **PostgreSQL: `update_client_folder_ids`** (module 62)
+  - Param 1: `{{2.\`5\`}}` (client code)
+  - Param 2: `{{75.resolved_tier1}}`
+  - Param 3: `{{76.resolved_tier2}}`
+- Branch 2: pass-through placeholder
+
+#### Router 72 — Create Tier 3 if missing
+- Branch 1: filter `product_type_folder_id` is empty → **Drive: Create Folder** (module 63)
+  - Name: `[{{2.\`5\`}}] {{57.tier3FolderName}}`
+  - Parent: `{{76.resolved_tier2}}`
+- Branch 2: pass-through placeholder
+
+#### SetVariables 77 — Resolve Tier 3 ID *(main flow, after router 72)*
+- `resolved_tier3` = `{{ifempty(59.product_type_folder_id; 63.id)}}`
+
+#### Router 73 — Create Tier 4 if missing
+- Branch 1: filter `year_folder_id` is empty → **Drive: Create Folder** (module 64)
+  - Name: `{{formatDate(2.\`3\`; "YYYY")}}`
+  - Parent: `{{77.resolved_tier3}}`
+- Branch 2: pass-through placeholder
+
+#### SetVariables 78 — Resolve Tier 4 ID *(main flow, after router 73)*
+- `resolved_tier4` = `{{ifempty(59.year_folder_id; 64.id)}}`
+
+#### Router 74 — Store Tier 3+4 IDs if either was just created
+- Branch 1: filter `product_type_folder_id` OR `year_folder_id` is empty → **PostgreSQL: `upsert_product_folder`** (module 65)
+  - Param 1: `{{2.\`5\`}}` (client code)
+  - Param 2: `{{40.\`0\`}}` (product type)
+  - Param 3: `{{formatDate(2.\`3\`; "YYYY")}}` (year)
+  - Param 4: `{{77.resolved_tier3}}`
+  - Param 5: `{{78.resolved_tier4}}`
+- Branch 2: pass-through placeholder
+
+#### 66 — Drive: Create IO Folder *(always, main flow)*
+- Name: `{{57.ioFolderName}}`
+- Parent: `{{78.resolved_tier4}}`
+
+#### 67 — PostgreSQL: `upsert_io_product` *(always)*
+- Param 1: `{{2.\`4\`}}` (IO reference)
+- Param 2: `{{40.\`0\`}}` (product type)
+- Param 3: `{{40.\`1\`}}` (product name)
+- Param 4: `{{32.\`Unique ID\`}}`
+- Param 5: `{{66.id}}` (Drive folder ID)
+
+#### 68 — Google Sheets: Update Row *(always)*
+- Spreadsheet: IO Submissions
+- Sheet: Products
+- Row: `{{17.__ROW_NUMBER__}}`
+- Column E: `{{32.\`Unique ID\`}}`
+
+---
+
+**Also update in the main flow (outside iterator):**
+- Module 41: set value to `- {{40.\`0\`}}` (product type only)
+- Module 47: append to goal notes: `\n\nFull IO details: https://bionic-dashboard-aevhj.kinsta.app/dashboard/3-io-overview?io_reference={{2.\`4\`}}`
+- Module 54: set `@03` param to `https://bionic-dashboard-aevhj.kinsta.app/dashboard/3-io-overview?io_reference={{2.\`4\`}}`
+- Module 10: remove Drive link write-back (col S / field 18)
+- Delete module 12 (old flat Drive folder creation)
+
+---
+
 ## Drive Folder Structure
 
 The Drive folder structure uses a four-tier hierarchy that mirrors the client and contact structure.
