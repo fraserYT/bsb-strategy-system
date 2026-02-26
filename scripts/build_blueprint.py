@@ -350,10 +350,11 @@ for m in flow:
     if m.get('id') == 10:
         m['mapper']['values'].pop('18', None)
 
-# 3. Module 54: update Drive link to reference module 66 (IO folder) instead of removed module 12
+# 3. Module 54: store Metabase IO dashboard link instead of Drive link
+METABASE_IO_URL = 'https://bionic-dashboard-aevhj.kinsta.app/dashboard/3-io-overview?io_reference={{2.`4`}}'
 for m in flow:
     if m.get('id') == 54:
-        m['mapper']['@03:text'] = m['mapper']['@03:text'].replace('{{12.id}}', '{{66.id}}')
+        m['mapper']['@03:text'] = METABASE_IO_URL
 
 # 4. Replace module 23 with new modules 57-68
 for i, m in enumerate(flow):

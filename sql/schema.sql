@@ -209,7 +209,7 @@ CREATE TABLE insertion_orders (
     company_name                VARCHAR(255),
     formatted_company_name      VARCHAR(255),
     asana_link                  TEXT,
-    drive_link                  TEXT,
+    metabase_link               TEXT,
     goal_link                   TEXT,
     created_at                  TIMESTAMPTZ DEFAULT NOW()
 );

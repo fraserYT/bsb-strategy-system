@@ -255,18 +255,18 @@ $fn$ LANGUAGE plpgsql;
 -- ============================================
 
 CREATE OR REPLACE FUNCTION update_insertion_order_links(
-    p_io_reference  TEXT,
-    p_asana_link    TEXT DEFAULT NULL,
-    p_drive_link    TEXT DEFAULT NULL,
-    p_goal_gid      TEXT DEFAULT NULL
+    p_io_reference   TEXT,
+    p_asana_link     TEXT DEFAULT NULL,
+    p_metabase_link  TEXT DEFAULT NULL,
+    p_goal_gid       TEXT DEFAULT NULL
 ) RETURNS BOOLEAN AS $fn$
 DECLARE
     v_rows INTEGER;
 BEGIN
     UPDATE insertion_orders SET
-        asana_link = COALESCE(NULLIF(TRIM(p_asana_link), ''), asana_link),
-        drive_link = COALESCE(NULLIF(TRIM(p_drive_link), ''), drive_link),
-        goal_link  = CASE
+        asana_link    = COALESCE(NULLIF(TRIM(p_asana_link), ''), asana_link),
+        metabase_link = COALESCE(NULLIF(TRIM(p_metabase_link), ''), metabase_link),
+        goal_link     = CASE
             WHEN NULLIF(TRIM(p_goal_gid), '') IS NOT NULL
             THEN 'https://app.asana.com/0/goal/' || TRIM(p_goal_gid)
             ELSE goal_link
