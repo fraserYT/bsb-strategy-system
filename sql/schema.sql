@@ -146,7 +146,7 @@ CREATE TABLE clients (
     id                      SERIAL PRIMARY KEY,
     client_name             VARCHAR(255) NOT NULL,
     formatted_client_name   VARCHAR(255),
-    tla                     VARCHAR(20),
+    tla                     VARCHAR(20) UNIQUE,
     drive_folder_id         TEXT,           -- Tier 1: "[TLA] Client Name" folder in Client Projects
     created_at              TIMESTAMPTZ DEFAULT NOW()
 );

@@ -257,13 +257,171 @@ For the form's client code dropdown to include a new client, the salesperson (or
 
 ### Planned Process
 
-New fields will be added to the IO submission form that appear when "New Client" is selected. The salesperson fills in the company details (name, TLA, billing contact, payment terms, etc.) as part of the submission. Make.com will then automatically:
+New fields will be added to the IO submission form that appear when "New Client" is ticked. The salesperson fills in the company details (name, TLA, billing contact, payment terms, etc.) as part of the submission. Make.com will then automatically:
 
-- Create the client record in the database
-- Create the client code record in the database
-- Add the entry to the Google Sheet so the dropdown stays current for future submissions
+- Create the client record in the database (`upsert_client`)
+- Create the client code record in the database (`upsert_client_code`)
+- Add the entry to the client directory Google Sheet so the dropdown is current for future submissions
 
 This removes the manual step entirely and ensures the database and Google Sheet stay in sync.
+
+---
+
+### New Client Flow — Implementation
+
+#### DB changes (already deployed)
+
+- `UNIQUE` constraint added to `clients.tla` — required for `upsert_client` ON CONFLICT
+- `get_client_folder_info` now returns `primary_contact_email` as a 6th column (was 5)
+  - **Important**: any existing Make.com module referencing this function by positional output must be updated if you add a column reference after `primary_contact`
+
+---
+
+#### Step 1 — Gravity Form changes (surveys.bitesizebio.com WP admin → Forms → IO Submission Form)
+
+**Fix the conditional logic bug on field 8 (Other Company / Full Name):**
+- Open field 8 → Conditional Logic
+- Change the rule value from `New Client?` to `New Client` (remove the question mark)
+- Rename the field label from "Other Company (Full Name)" to "Company Name"
+- Update description to: "Enter the full legal company name."
+
+**Make the BSB Client Code dropdown conditional (field 6):**
+- Open field 6 → Conditional Logic → Enable
+- Rule: `New Client` is NOT `New Client` (i.e. show when checkbox is unchecked)
+- This hides the dropdown when the salesperson ticks New Client
+
+**Make Primary Contact fields conditional (fields 10 + 11):**
+- Open field 10 (Primary Client Contact) → Conditional Logic → Enable
+- Rule: `New Client` is `New Client`
+- Open field 11 (Primary Client Email) → same rule
+- These fields now only appear when New Client is ticked
+
+**Add new fields (all conditional: `New Client` is `New Client`):**
+
+Add the following fields after field 8 (Company Name), before the section break (field 19):
+
+| # | Type | Label | Required | Notes |
+|---|------|-------|----------|-------|
+| new | text | TLA | Yes | 3-letter company acronym, e.g. ZYM |
+| new | text | New BSB Client Code | Yes | e.g. ZYM001 — TLA + 3-digit number |
+| new | text | Payment Terms | No | e.g. "30 days", "Prepay" |
+| new | text | PO Required | No | e.g. "Yes — required before invoicing", "No" |
+| new | text | Billing Contact Name | No | |
+| new | email | Billing Contact Email | No | |
+| new | textarea | Billing Address | No | |
+
+Apply conditional logic to each: show when `New Client` is `New Client`.
+
+**Update field 7 (New Client checkbox) description to:**
+> Tick this box if this client does not yet have a BSB client code. Fill in the new client details below — the system will create their record automatically on submission.
+
+---
+
+#### Step 2 — IO Forms Google Sheet changes
+
+Sheet: `IO Forms` tab in the IO submissions spreadsheet (`1tQfpYsQEfpO5XAPzWbkHUJeGWPKITDiSDOhp6GGJ0jA`)
+
+Add the following columns at the end (after column V, currently the last column):
+
+| Column | Letter | Header |
+|--------|--------|--------|
+| 22 | W | TLA |
+| 23 | X | New BSB Client Code |
+| 24 | Y | Payment Terms |
+| 25 | Z | PO Required |
+| 26 | AA | Billing Contact Name |
+| 27 | AB | Billing Contact Email |
+| 28 | AC | Billing Address |
+
+Ensure the GF Sheets integration maps the new form fields to these columns (check the GF Google Sheets add-on settings — field order in the form should map to column order in the sheet).
+
+---
+
+#### Step 3 — Client Directory Google Sheet changes
+
+Sheet: `1hSSJCG-QR6R6XIyB-CrxryDhA3_XqBt-SqhG9Oqy96E`, tab 0
+
+Add a new column **after** the existing columns:
+- Header: `Primary contact email`
+
+Backfill this column for existing entries if you want auto-population for existing clients in future (not required for the new client flow to work).
+
+---
+
+#### Step 4 — Make.com changes
+
+**4a. Update module 2 (Google Sheets Watch Rows) tableFirstRow**
+- Change `tableFirstRow` from `A1:V1` to `A1:AC1` so Make.com reads the new columns
+
+**4b. Add a SetVariables module immediately after module 2** (new module, e.g. 79)
+- Scope: `roundtrip`
+- Variables:
+  - `resolved_client_code` = `{{ifempty(2.\`5\`; 2.\`23\`)}}`
+    *(col 5 = Formatted Client Code for existing; col 23 = New BSB Client Code for new)*
+  - `resolved_company` = `{{ifempty(2.\`15\`; 2.\`7\`)}}`
+    *(col 15 = Company Name auto-populated for existing; col 7 = Company Name entered for new)*
+  - `resolved_formatted_company` = `{{ifempty(2.\`16\`; join(list(2.\`7\`; " ["; 2.\`22\`; "]"); ""))}}`
+    *(col 16 = Formatted Company Name for existing; derived "Name [TLA]" for new)*
+
+**4c. Add a Router module after 79** (new module, e.g. 80)
+
+- **Branch 1** — filter: `{{2.\`6\`}}` = `New Client` (checkbox ticked)
+  - **Module 81 — PostgreSQL: `upsert_client`**
+    - Param 1 (tla): `{{2.\`22\`}}`
+    - Param 2 (client_name): `{{2.\`7\`}}`
+    - Param 3 (formatted_client_name): `{{79.resolved_formatted_company}}`
+  - **Module 82 — PostgreSQL: `upsert_client_code`**
+    - Param 1 (bsb_client_code): `{{2.\`23\`}}`
+    - Param 2 (tla): `{{2.\`22\`}}`
+    - Param 3 (primary_contact): `{{2.\`8\`}}`
+    - Param 4 (primary_contact_email): `{{2.\`9\`}}`
+    - Param 5 (payment_terms): `{{2.\`24\`}}`
+    - Param 6 (po_required): `{{2.\`25\`}}`
+    - Param 7 (billing_contact): `{{2.\`26\`}}`
+    - Param 8 (billing_email): `{{2.\`27\`}}`
+    - Param 9 (billing_address): `{{2.\`28\`}}`
+  - **Module 83 — Google Sheets: Add a Row** (client directory sheet)
+    - Spreadsheet: `1hSSJCG-QR6R6XIyB-CrxryDhA3_XqBt-SqhG9Oqy96E`
+    - Sheet tab: the client directory tab (tab index 0)
+    - `BsB Client Code`: `{{2.\`23\`}}`
+    - `Client Name`: `{{2.\`7\`}}`
+    - `Formatted Client Name`: `{{79.resolved_formatted_company}}`
+    - `Primary contact`: `{{2.\`8\`}}`
+    - `Primary contact email`: `{{2.\`9\`}}`
+
+- **Branch 2** — pass-through (existing client, no action needed)
+
+**4d. Update downstream modules that reference client code or company name:**
+
+Replace `{{2.\`5\`}}` with `{{79.resolved_client_code}}` in:
+- Module 47 (Asana goal notes — `BsB Client Code: ...`)
+- Module 6 (Asana task name)
+- Module 52 (upsert_insertion_order — @07)
+- Module 58 (get_client_folder_info — Param 1, when 4-tier Drive flow is built)
+
+Replace `{{2.\`15\`}}` with `{{79.resolved_company}}` in:
+- Module 47 (Asana goal notes — `Client: ...`)
+- Module 12 (Drive folder name)
+- Module 48 (Slack message)
+- Module 52 (upsert_insertion_order — @17)
+
+Replace `{{2.\`16\`}}` with `{{79.resolved_formatted_company}}` in:
+- Module 6 (Asana task name)
+- Module 52 (upsert_insertion_order — @18)
+
+---
+
+#### Notes on Populate Anything (existing client UX)
+
+The client code dropdown (field 6) populates from the client directory sheet:
+- Label template: `{BsB Client Code} | {Client Name} | {Primary contact}`
+- Value: `{BsB Client Code}`
+
+Fields 16 (Company Name) and 18 (Formatted Company Name) auto-populate from the sheet based on the selected client code — these remain hidden and unchanged.
+
+Fields 10 (Primary Client Contact) and 11 (Primary Client Email) are now hidden for existing clients. For existing clients, Make.com uses `get_client_folder_info` to retrieve the primary contact and email from the DB. Module 52's @10 and @11 parameters should be updated to use the DB result for existing clients:
+- For now, `{{2.\`8\`}}` and `{{2.\`9\`}}` will be empty for existing client submissions (since fields 10 and 11 are hidden). The DB already has this data from the original import.
+- **Option**: add a PostgreSQL `get_client_folder_info` call in Branch 2 of the router (existing client branch) and resolve primary contact/email from there into a SetVariables, then use those variables in module 52.
 
 ---
 

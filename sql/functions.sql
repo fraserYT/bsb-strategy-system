@@ -1,6 +1,6 @@
 -- BsB Strategy Planning System
 -- Database Functions
--- Last updated: 2026-02-24
+-- Last updated: 2026-02-27
 --
 -- Note on dollar-quoting: Sevalla SQL studio requires each function to be
 -- pasted and run alone. New functions use single-quoted bodies to avoid
@@ -282,18 +282,19 @@ $fn$ LANGUAGE plpgsql;
 -- ============================================
 -- get_client_folder_info
 -- Called by Make.com at the start of the Drive folder creation flow.
--- Returns TLA, client name, contact name, and cached Tier 1+2 folder IDs.
+-- Returns TLA, client name, contact name, contact email, and cached Tier 1+2 folder IDs.
 -- Null folder IDs = folders don't exist yet and need creating in Drive.
 -- Root "Client Projects" folder ID: 1PURGWZSK1gMTJN7GDYogY1Q0_ohsUkht
 -- ============================================
 
 CREATE OR REPLACE FUNCTION get_client_folder_info(p_client_code TEXT)
 RETURNS TABLE (
-    tla                 TEXT,
-    client_name         TEXT,
-    primary_contact     TEXT,
-    tier1_folder_id     TEXT,
-    tier2_folder_id     TEXT
+    tla                     TEXT,
+    client_name             TEXT,
+    primary_contact         TEXT,
+    primary_contact_email   TEXT,
+    tier1_folder_id         TEXT,
+    tier2_folder_id         TEXT
 )
 LANGUAGE plpgsql
 AS '
@@ -303,6 +304,7 @@ BEGIN
         c.tla::TEXT,
         c.client_name::TEXT,
         cc.primary_contact::TEXT,
+        cc.primary_contact_email::TEXT,
         c.drive_folder_id::TEXT,
         cc.drive_folder_id::TEXT
     FROM bsb_client_codes cc
@@ -705,7 +707,7 @@ BEGIN
         FROM milestones m
         JOIN projects p ON m.project_id = p.id
         JOIN strategic_bets sb ON p.strategic_bet_id = sb.id
-        WHERE m.end_cycle_id = v_cycle_id
+        WHERE m.focus_cycle_id = v_cycle_id
         GROUP BY sb.code
         HAVING COUNT(CASE WHEN m.status != 'cancelled' THEN 1 END) > 0
     ) t;
@@ -781,3 +783,4 @@ BEGIN
 
 END;
 $fn$ LANGUAGE plpgsql;
+clauc
