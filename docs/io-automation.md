@@ -100,7 +100,7 @@ The 4-tier Drive folder logic (replacing flat modules 12 and 23) needs to be bui
 
 #### 57 — SetVariables
 - `tier3FolderName` → product type mapping:
-  `{{if(40.\`0\` = "Live Event"; "Live Events"; if(40.\`0\` = "Microscopy Focus Live Event"; "Live Events"; if(40.\`0\` = "Hybrid Event"; "Hybrid Events"; if(40.\`0\` = "eBlast (Single send)"; "eBlasts"; if(40.\`0\` = "eBlast (with soft resend)"; "eBlasts"; if(40.\`0\` = "eBook (creation, hosting and promotion)"; "eBooks"; if(40.\`0\` = "eBook/downloadable (hosting and promotion only)"; "eBooks"; if(40.\`0\` = "Display ads campaign"; "Display Ad Campaigns"; if(40.\`0\` = "Educational Article (Client Sponsored/Written)"; "Educational Articles"; if(40.\`0\` = "Product Article (Client Sponsored/Written)"; "Product Articles"; if(40.\`0\` = "Masterclass email series (x7)"; "Masterclasses"; if(40.\`0\` = "Newsletter Sponsorship 1-4x"; "Newsletter Sponsorships"; if(40.\`0\` = "Podcast Series"; "Podcasts"; 40.\`0\`)))))))))))))}}`
+  `{{if(40.\`0\` = "Live Event"; "Live Events"; if(40.\`0\` = "Microscopy Focus Live Event"; "Live Events"; if(40.\`0\` = "Hybrid Event"; "Hybrid Events"; if(40.\`0\` = "eBlast (Single send)"; "eBlasts"; if(40.\`0\` = "eBlast (with soft resend)"; "eBlasts"; if(40.\`0\` = "eBook (creation, hosting and promotion)"; "eBooks"; if(40.\`0\` = "eBook/downloadable (hosting and promotion only)"; "eBooks"; if(40.\`0\` = "Display ads campaign"; "Display Ad Campaigns"; if(40.\`0\` = "Educational Article (Client Sponsored/Written)"; "Educational Articles"; if(40.\`0\` = "Product Article (Client Sponsored/Written)"; "Product Articles"; if(40.\`0\` = "Masterclass email series (x7)"; "Masterclasses"; if(40.\`0\` = "Newsletter Sponsorship 1-4x"; "Newsletter Sponsorships"; if(40.\`0\` = "Podcast Series"; "Podcasts"; if(40.\`0\` = "Multi-Session Live Event"; "Multi-Session Live Events"; 40.\`0\`))))))))))))))}}`
 - `ioFolderName` → `[{{2.\`5\`}}] {{2.\`4\`}} {{2.\`3\`}} {{40.\`0\`}} ({{32.\`Unique ID\`}})`
 
 #### 58 — PostgreSQL: `get_client_folder_info`
@@ -250,7 +250,7 @@ The BsB/MF distinction is implied by the client and not included in the product 
 | Masterclass email series (x7) | [Template](https://app.asana.com/1/10928367000451/project/1210035872761531/list/1210036080685782) | Masterclasses | Not built | |
 | Newsletter Sponsorship 1-4x | [Template](https://app.asana.com/1/10928367000451/project/1211406171146623/list/1211408780452912) | Newsletter Sponsorships | Not built | Replaces Newsletter Banner |
 | Podcast Series | [Template](https://app.asana.com/1/10928367000451/project/1201367861618216/list/1205115756115854) | Podcasts | Not built | Will use Transistor platform |
-| Multi-Session Live Event | — | — | On hold | No template or defined process yet — sold as add-on; needs Asana/data sheet design before automation can be built |
+| Multi-Session Live Event | — | Multi-Session Live Events | Not built | No Asana template yet — will be included as a Make.com branch so it enters the system (Drive folders + DB record created). Asana project creation remains manual until template is designed. |
 
 ---
 
