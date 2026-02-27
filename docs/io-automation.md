@@ -235,17 +235,28 @@ Each deliverable on an IO is routed based on its product type. The table below s
 
 The BsB/MF distinction is implied by the client and not included in the product type value. The Make.com router identifies MF/Leica IOs by client TLA.
 
-| Product Type | Drive Folder Name | Status | Notes |
-|---|---|---|---|
-| Live Event | Live Events | Live (BsB) / Placeholder (MF) | BsB: Asana project from template + pre-filled registration URL. MF: route exists, not yet built |
-| Multi-Session Live Event | Multi-Session Live Events | Not built | Separate branch planned |
-| eBlast | eBlasts | Placeholder | Route exists, not yet built |
-| Podcast | Podcasts | Not built | Will use Transistor platform |
-| Newsletter Banner | Newsletter Banners | Not built | Planned |
-| Website Banner | Website Banners | Not built | Planned |
-| Article | Articles | Not built | Planned |
-| Ebook | Ebooks | Not built | Planned |
-| Masterclass | Masterclasses | Not built | Planned |
+**⚠️ Open questions (pending team confirmation):**
+1. Drive folder names — for variants of the same category (e.g. both eBlast types), do they share a folder (`eBlasts`) or get separate folders?
+2. "Educational Article" and "Product Article" — same `Articles` folder or separate?
+3. Are the old product types (Multi-Session Live Event, Newsletter Banner, Website Banner) being retired or do they remain alongside the new list?
+
+| Product Type | Asana Template | Drive Folder Name | Status | Notes |
+|---|---|---|---|---|
+| Live Event | [Template](https://app.asana.com/1/10928367000451/project/1205384033200477/list/1205386857458568) | Live Events | Live (BsB) | Asana project from template + pre-filled registration URL |
+| Microscopy Focus Live Event | [Template](https://app.asana.com/1/10928367000451/project/1207443958731404/list/1207444426812531) | Live Events | Not built | MF-specific live event branch — replaces the placeholder MF route |
+| Hybrid Event | [Template](https://app.asana.com/1/10928367000451/project/1210079510012368/overview/1210079519686730) | Hybrid Events | Not built | New product type |
+| eBlast (Single send) | [Template](https://app.asana.com/1/10928367000451/project/1200403743441681/list/1205110749757378) | eBlasts | Placeholder (route exists) | ⚠️ Folder name TBC — shares folder with soft resend variant? |
+| eBlast (with soft resend) | [Template](https://app.asana.com/1/10928367000451/project/1206488939681747/list/1206489483671058) | eBlasts | Not built | ⚠️ Folder name TBC |
+| eBook (creation, hosting and promotion) | [Template](https://app.asana.com/1/10928367000451/project/1206062951814214/list/1206063886123309) | eBooks | Not built | ⚠️ Folder name TBC — shares folder with hosting-only variant? |
+| eBook/downloadable (hosting and promotion only) | [Template](https://app.asana.com/1/10928367000451/project/1204522709698702/list/1204524347186660) | eBooks | Not built | ⚠️ Folder name TBC |
+| Display ads campaign | [Template](https://app.asana.com/1/10928367000451/project/1208715374595062/list/1208716588057740) | Display Ad Campaigns | Not built | New product type |
+| Educational Article (Client Sponsored/Written) | [Template](https://app.asana.com/1/10928367000451/project/1212360402687239/list/1212361593046347) | Articles | Not built | ⚠️ Folder name TBC — shares folder with Product Article? |
+| Product Article (Client Sponsored/Written) | [Template](https://app.asana.com/1/10928367000451/project/1207642533460808/list/1207642933398192) | Articles | Not built | ⚠️ Folder name TBC |
+| Masterclass email series (x7) | [Template](https://app.asana.com/1/10928367000451/project/1210035872761531/list/1210036080685782) | Masterclasses | Not built | |
+| Newsletter Sponsorship 1-4x | [Template](https://app.asana.com/1/10928367000451/project/1211406171146623/list/1211408780452912) | Newsletter Sponsorships | Not built | ⚠️ Replaces "Newsletter Banner"? |
+| Podcast Series | [Template](https://app.asana.com/1/10928367000451/project/1201367861618216/list/1205115756115854) | Podcasts | Not built | Will use Transistor platform |
+| Multi-Session Live Event | — | Multi-Session Live Events | Not built | ⚠️ Retiring? Not in new product list |
+| Website Banner | — | Website Banners | Not built | ⚠️ Retiring? Not in new product list |
 
 ---
 
