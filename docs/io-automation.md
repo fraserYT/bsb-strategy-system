@@ -100,7 +100,7 @@ The 4-tier Drive folder logic (replacing flat modules 12 and 23) needs to be bui
 
 #### 57 — SetVariables
 - `tier3FolderName` → product type mapping:
-  `{{if(40.\`0\` = "Live Event"; "Live Events"; if(40.\`0\` = "eBlast"; "eBlasts"; if(40.\`0\` = "Podcast"; "Podcasts"; if(40.\`0\` = "Newsletter Banner"; "Newsletter Banners"; if(40.\`0\` = "Website Banner"; "Website Banners"; if(40.\`0\` = "Multi-Session Live Event"; "Multi-Session Live Events"; if(40.\`0\` = "Article"; "Articles"; if(40.\`0\` = "Ebook"; "Ebooks"; if(40.\`0\` = "Masterclass"; "Masterclasses"; 40.\`0\`)))))))))}}`
+  `{{if(40.\`0\` = "Live Event"; "Live Events"; if(40.\`0\` = "Microscopy Focus Live Event"; "Live Events"; if(40.\`0\` = "Hybrid Event"; "Hybrid Events"; if(40.\`0\` = "eBlast (Single send)"; "eBlasts"; if(40.\`0\` = "eBlast (with soft resend)"; "eBlasts"; if(40.\`0\` = "eBook (creation, hosting and promotion)"; "eBooks"; if(40.\`0\` = "eBook/downloadable (hosting and promotion only)"; "eBooks"; if(40.\`0\` = "Display ads campaign"; "Display Ad Campaigns"; if(40.\`0\` = "Educational Article (Client Sponsored/Written)"; "Educational Articles"; if(40.\`0\` = "Product Article (Client Sponsored/Written)"; "Product Articles"; if(40.\`0\` = "Masterclass email series (x7)"; "Masterclasses"; if(40.\`0\` = "Newsletter Sponsorship 1-4x"; "Newsletter Sponsorships"; if(40.\`0\` = "Podcast Series"; "Podcasts"; 40.\`0\`)))))))))))))}}`
 - `ioFolderName` → `[{{2.\`5\`}}] {{2.\`4\`}} {{2.\`3\`}} {{40.\`0\`}} ({{32.\`Unique ID\`}})`
 
 #### 58 — PostgreSQL: `get_client_folder_info`
@@ -235,28 +235,22 @@ Each deliverable on an IO is routed based on its product type. The table below s
 
 The BsB/MF distinction is implied by the client and not included in the product type value. The Make.com router identifies MF/Leica IOs by client TLA.
 
-**⚠️ Open questions (pending team confirmation):**
-1. Drive folder names — for variants of the same category (e.g. both eBlast types), do they share a folder (`eBlasts`) or get separate folders?
-2. "Educational Article" and "Product Article" — same `Articles` folder or separate?
-3. Are the old product types (Multi-Session Live Event, Newsletter Banner, Website Banner) being retired or do they remain alongside the new list?
-
 | Product Type | Asana Template | Drive Folder Name | Status | Notes |
 |---|---|---|---|---|
 | Live Event | [Template](https://app.asana.com/1/10928367000451/project/1205384033200477/list/1205386857458568) | Live Events | Live (BsB) | Asana project from template + pre-filled registration URL |
-| Microscopy Focus Live Event | [Template](https://app.asana.com/1/10928367000451/project/1207443958731404/list/1207444426812531) | Live Events | Not built | MF-specific live event branch — replaces the placeholder MF route |
-| Hybrid Event | [Template](https://app.asana.com/1/10928367000451/project/1210079510012368/overview/1210079519686730) | Hybrid Events | Not built | New product type |
-| eBlast (Single send) | [Template](https://app.asana.com/1/10928367000451/project/1200403743441681/list/1205110749757378) | eBlasts | Placeholder (route exists) | ⚠️ Folder name TBC — shares folder with soft resend variant? |
-| eBlast (with soft resend) | [Template](https://app.asana.com/1/10928367000451/project/1206488939681747/list/1206489483671058) | eBlasts | Not built | ⚠️ Folder name TBC |
-| eBook (creation, hosting and promotion) | [Template](https://app.asana.com/1/10928367000451/project/1206062951814214/list/1206063886123309) | eBooks | Not built | ⚠️ Folder name TBC — shares folder with hosting-only variant? |
-| eBook/downloadable (hosting and promotion only) | [Template](https://app.asana.com/1/10928367000451/project/1204522709698702/list/1204524347186660) | eBooks | Not built | ⚠️ Folder name TBC |
-| Display ads campaign | [Template](https://app.asana.com/1/10928367000451/project/1208715374595062/list/1208716588057740) | Display Ad Campaigns | Not built | New product type |
-| Educational Article (Client Sponsored/Written) | [Template](https://app.asana.com/1/10928367000451/project/1212360402687239/list/1212361593046347) | Articles | Not built | ⚠️ Folder name TBC — shares folder with Product Article? |
-| Product Article (Client Sponsored/Written) | [Template](https://app.asana.com/1/10928367000451/project/1207642533460808/list/1207642933398192) | Articles | Not built | ⚠️ Folder name TBC |
+| Microscopy Focus Live Event | [Template](https://app.asana.com/1/10928367000451/project/1207443958731404/list/1207444426812531) | Live Events | Not built | MF-specific — replaces placeholder MF route; shares Live Events folder |
+| Hybrid Event | [Template](https://app.asana.com/1/10928367000451/project/1210079510012368/overview/1210079519686730) | Hybrid Events | Not built | |
+| eBlast (Single send) | [Template](https://app.asana.com/1/10928367000451/project/1200403743441681/list/1205110749757378) | eBlasts | Placeholder (route exists) | Shares folder with soft resend variant |
+| eBlast (with soft resend) | [Template](https://app.asana.com/1/10928367000451/project/1206488939681747/list/1206489483671058) | eBlasts | Not built | Shares folder with single send variant |
+| eBook (creation, hosting and promotion) | [Template](https://app.asana.com/1/10928367000451/project/1206062951814214/list/1206063886123309) | eBooks | Not built | Shares folder with hosting-only variant |
+| eBook/downloadable (hosting and promotion only) | [Template](https://app.asana.com/1/10928367000451/project/1204522709698702/list/1204524347186660) | eBooks | Not built | Shares folder with full creation variant |
+| Display ads campaign | [Template](https://app.asana.com/1/10928367000451/project/1208715374595062/list/1208716588057740) | Display Ad Campaigns | Not built | Replaces Website Banner |
+| Educational Article (Client Sponsored/Written) | [Template](https://app.asana.com/1/10928367000451/project/1212360402687239/list/1212361593046347) | Educational Articles | Not built | Separate folder from Product Articles |
+| Product Article (Client Sponsored/Written) | [Template](https://app.asana.com/1/10928367000451/project/1207642533460808/list/1207642933398192) | Product Articles | Not built | Separate folder from Educational Articles |
 | Masterclass email series (x7) | [Template](https://app.asana.com/1/10928367000451/project/1210035872761531/list/1210036080685782) | Masterclasses | Not built | |
-| Newsletter Sponsorship 1-4x | [Template](https://app.asana.com/1/10928367000451/project/1211406171146623/list/1211408780452912) | Newsletter Sponsorships | Not built | ⚠️ Replaces "Newsletter Banner"? |
+| Newsletter Sponsorship 1-4x | [Template](https://app.asana.com/1/10928367000451/project/1211406171146623/list/1211408780452912) | Newsletter Sponsorships | Not built | Replaces Newsletter Banner |
 | Podcast Series | [Template](https://app.asana.com/1/10928367000451/project/1201367861618216/list/1205115756115854) | Podcasts | Not built | Will use Transistor platform |
-| Multi-Session Live Event | — | Multi-Session Live Events | Not built | ⚠️ Retiring? Not in new product list |
-| Website Banner | — | Website Banners | Not built | ⚠️ Retiring? Not in new product list |
+| Multi-Session Live Event | — | — | On hold | No template or defined process yet — sold as add-on; needs Asana/data sheet design before automation can be built |
 
 ---
 
